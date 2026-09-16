@@ -304,6 +304,24 @@ button{cursor:pointer}
 .fileHint{display:block;color:#737d85;font-size:9px;margin-top:5px;line-height:1.4}
 .attachment{margin-top:7px}
 .attachment a{color:#f7d91b;text-decoration:none;font-size:10px;font-weight:800}
+
+.emailPanel{
+  margin-top:10px;background:#111a21;border:1px solid #3b4b57;
+  border-radius:12px;padding:12px;
+}
+.emailPanel h3{margin:0 0 5px;font-size:14px}
+.emailPanel p{margin:0 0 11px;color:#aeb7bf;font-size:9px;line-height:1.45}
+.emailGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.emailBtn{
+  width:100%;height:46px;border:0;border-radius:10px;
+  background:var(--yellow);color:#111;font-weight:900;font-size:12px;
+}
+.emailBtn:disabled{opacity:.55;cursor:default}
+.emailStatus{min-height:17px;text-align:center;font-size:10px;margin-top:8px}
+.ivaResultGood{color:#35d07f!important}
+.ivaResultBad{color:#ff5965!important}
+.ivaResultNeutral{color:#f7d91b!important}
+
 </style>
 </head>
 
@@ -424,6 +442,35 @@ button{cursor:pointer}
       <div class="count">
         <small>Número de Facturas</small><b id="nf">0</b>
       </div>
+    </div>
+
+    <div class="emailPanel">
+      <h3>📧 ENVIAR DOCUMENTACIÓN AL GESTOR</h3>
+      <p>Envía por correo las facturas adjuntadas de compras, facturas emitidas o ambas.</p>
+      <div class="field">
+        <label>Documentación</label>
+        <select id="emailTipo" class="select">
+          <option value="todas">Todas (compras + emitidas)</option>
+          <option value="compras">Solo compras</option>
+          <option value="emitidas">Solo facturas emitidas</option>
+        </select>
+      </div>
+      <div class="emailGrid">
+        <div class="field">
+          <label>Desde</label>
+          <input id="emailDesde" class="input" type="month">
+        </div>
+        <div class="field">
+          <label>Hasta</label>
+          <input id="emailHasta" class="input" type="month">
+        </div>
+      </div>
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input id="emailDestino" class="input" type="email" inputmode="email" autocomplete="email" placeholder="ejemplo@correo.com">
+      </div>
+      <button id="emailBtn" class="emailBtn" type="button" onclick="sendInvoicesByEmail()">ENVIAR DOCUMENTACIÓN</button>
+      <div id="emailStatus" class="emailStatus"></div>
     </div>
   </div>
 </section>
@@ -640,13 +687,12 @@ function openForm(tipo){
         <div class="box ${c?"y":"p"}"><small>Total</small><strong id="totalValue">0,00 €</strong></div>
       </div>
 
-      ${c ? `
       <div class="field">
         <label>📎 Factura / justificante <span class="optional">(opcional)</span></label>
         <input id="facturaArchivo" class="input fileInput" type="file"
                accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
-        <small class="fileHint">PDF, JPG o PNG. Puedes guardar la compra sin adjuntar ningún archivo.</small>
-      </div>` : ""}
+        <small class="fileHint">PDF, JPG o PNG. Puedes guardar el registro sin adjuntar ningún archivo.</small>
+      </div>
 
       <button id="saveBtn" class="save ${c?"y":"p"}" onclick="sendRecord('${tipo}')">
         ${c?"GUARDAR COMPRA":"GUARDAR FACTURA"}
@@ -762,11 +808,15 @@ async function sendRecord(tipo){
     }
 
     m.className="msg ok";
-    m.textContent=file ? "Compra y factura guardadas correctamente ✓" : "Guardado correctamente ✓";
+    m.textContent=file
+      ? (tipo==="Compra" ? "Compra y factura guardadas correctamente ✓" : "Factura y archivo guardados correctamente ✓")
+      : "Guardado correctamente ✓";
     setTimeout(()=>showToast(tipo),250);
   }catch(e){
     m.className="msg err";
-    m.textContent="No se ha podido guardar la compra.";
+    m.textContent=tipo==="Compra"
+      ? "No se ha podido guardar la compra."
+      : "No se ha podido guardar la factura.";
     console.error(e);
   }finally{
     b.disabled=false;
@@ -804,7 +854,7 @@ function row(r){
         <div class="rtitle">${compra?"Compra":"Factura"}</div>
         <div class="rdesc">${esc(r.tercero)} - ${esc(r.concepto)}</div>
         <div class="rdate">${dateText(r.fecha)}</div>
-        ${compra && r.facturaUrl ? `<div class="attachment"><a href="${esc(r.facturaUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📄 Ver factura</a></div>` : ""}
+        ${r.facturaUrl ? `<div class="attachment"><a href="${esc(r.facturaUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📄 Ver ${compra ? "factura / justificante" : "factura emitida"}</a></div>` : ""}
       </div>
       <div class="ramount">${euro(r.total)}</div>
       <div class="rarrow">›</div>
@@ -1158,6 +1208,7 @@ async function openSummary(){
 
   // Mostrar inmediatamente los datos disponibles y después sincronizar con Sheets.
   buildSummaryPeriods();
+  setDefaultEmailMonths();
   updateSummary();
 
   const ok=await refreshData(false);
@@ -1167,20 +1218,128 @@ async function openSummary(){
   }
 }
 
+function setDefaultEmailMonths(){
+  const now=new Date();
+  const key=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
+  if($("emailDesde") && !$("emailDesde").value) $("emailDesde").value=key;
+  if($("emailHasta") && !$("emailHasta").value) $("emailHasta").value=key;
+  const saved=localStorage.getItem("cf_email_destino")||"";
+  if($("emailDestino") && !$("emailDestino").value) $("emailDestino").value=saved;
+}
+
+function validEmail(email){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+async function sendInvoicesByEmail(){
+  const desde=$("emailDesde")?.value||"";
+  const hasta=$("emailHasta")?.value||"";
+  const correo=$("emailDestino")?.value.trim()||"";
+  const tipoEnvio=$("emailTipo")?.value||"todas";
+  const btn=$("emailBtn");
+  const status=$("emailStatus");
+
+  if(!desde || !hasta){
+    status.className="emailStatus err";
+    status.textContent="Selecciona el mes inicial y el mes final.";
+    return;
+  }
+
+  if(desde>hasta){
+    status.className="emailStatus err";
+    status.textContent="El mes 'Desde' no puede ser posterior a 'Hasta'.";
+    return;
+  }
+
+  if(!validEmail(correo)){
+    status.className="emailStatus err";
+    status.textContent="Introduce un correo electrónico válido.";
+    return;
+  }
+
+  const candidatos=records.filter(r=>{
+    const esCompra=r.tipo==="Compra";
+    const esEmitida=r.tipo==="Facturado" || r.tipo==="Facturación";
+
+    if(tipoEnvio==="compras" && !esCompra) return false;
+    if(tipoEnvio==="emitidas" && !esEmitida) return false;
+    if(tipoEnvio==="todas" && !esCompra && !esEmitida) return false;
+    if(!r.facturaUrl) return false;
+
+    const d=new Date(r.fecha);
+    if(Number.isNaN(d.getTime())) return false;
+
+    const key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+    return key>=desde && key<=hasta;
+  });
+
+  if(!candidatos.length){
+    status.className="emailStatus err";
+    status.textContent="No hay facturas adjuntadas de ese tipo en el período seleccionado.";
+    return;
+  }
+
+  const tipoTexto=
+    tipoEnvio==="compras" ? "compras" :
+    tipoEnvio==="emitidas" ? "facturas emitidas" :
+    "compras y facturas emitidas";
+
+  if(!confirm(`Se enviarán ${candidatos.length} documento${candidatos.length===1?"":"s"} de ${tipoTexto} a ${correo}. ¿Continuar?`)) return;
+
+  btn.disabled=true;
+  status.className="emailStatus";
+  status.textContent="Preparando y enviando documentación...";
+  localStorage.setItem("cf_email_destino",correo);
+
+  try{
+    const result=await callAction({
+      accion:"enviarFacturas",
+      correo,
+      desde,
+      hasta,
+      tipoEnvio
+    });
+
+    const cantidad=Number(result.documentos||0);
+    const correos=Number(result.correos||1);
+
+    const mensaje=
+      `Se han enviado ${cantidad} documento${cantidad===1?"":"s"} correctamente`+
+      (correos>1 ? ` en ${correos} correos.` : " en 1 correo.");
+
+    status.className="emailStatus ok";
+    status.textContent=mensaje;
+    showToastMessage("Documentación enviada",mensaje);
+
+  }catch(e){
+    console.error(e);
+    status.className="emailStatus err";
+    status.textContent=e.message||"No se pudo enviar la documentación.";
+  }finally{
+    btn.disabled=false;
+  }
+}
+
 function updateSummary(){
   const period=$("summaryPeriod").value;
   let c=0,f=0,ivs=0,ivr=0,nc=0,nf=0;
 
   records.forEach(r=>{
     const d=new Date(r.fecha);
-    if(period!=="all"){
-      if(period.length===4){
-        if(Number.isNaN(d.getTime()) || d.getFullYear()!==Number(period)) return;
-      }else{
-        const key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
-        if(key!==period)return;
-      }
+    if(Number.isNaN(d.getTime())) return;
+
+    let include=false;
+
+    if(period==="all"){
+      include=d.getFullYear()===new Date().getFullYear();
+    }else if(period.length===4){
+      include=String(d.getFullYear())===period;
+    }else{
+      const key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+      include=key===period;
     }
+
+    if(!include) return;
 
     if(r.tipo==="Compra"){
       c+=Number(r.total)||0;
@@ -1194,24 +1353,34 @@ function updateSummary(){
   });
 
   const resultado=ivr-ivs;
+  const res=$("res");
+  const label=$("resLabel");
+  const hint=$("resHint");
 
   $("sc").textContent=euro(c);
   $("sf").textContent=euro(f);
   $("sis").textContent=euro(ivs);
   $("sir").textContent=euro(ivr);
-  $("res").textContent=euro(Math.abs(resultado));
   $("nc").textContent=nc;
   $("nf").textContent=nf;
 
+  res.classList.remove("ivaResultGood","ivaResultBad","ivaResultNeutral");
+
   if(resultado>0){
-    $("resLabel").textContent="IVA repercutido pendiente";
-    $("resHint").textContent="Hay más IVA repercutido que soportado";
+    res.textContent="+"+euro(resultado);
+    res.classList.add("ivaResultGood");
+    label.textContent="IVA A TU FAVOR";
+    hint.textContent="El IVA repercutido es superior al IVA soportado";
   }else if(resultado<0){
-    $("resLabel").textContent="IVA soportado pendiente";
-    $("resHint").textContent="Hay más IVA soportado que repercutido";
+    res.textContent="-"+euro(Math.abs(resultado));
+    res.classList.add("ivaResultBad");
+    label.textContent="IVA A PAGAR";
+    hint.textContent="El IVA soportado es inferior al IVA repercutido";
   }else{
-    $("resLabel").textContent="Resultado IVA";
-    $("resHint").textContent="IVA repercutido − IVA soportado";
+    res.textContent="0,00 €";
+    res.classList.add("ivaResultNeutral");
+    label.textContent="IVA EQUILIBRADO";
+    hint.textContent="El IVA soportado y repercutido están equilibrados";
   }
 }
 
