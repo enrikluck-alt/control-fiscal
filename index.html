@@ -246,6 +246,58 @@ button{cursor:pointer}
   font-size:10px;
   margin:0 2px 7px;
 }
+
+.modal{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  background:rgba(0,0,0,.72);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+.modal.hidden{display:none}
+.modalCard{
+  width:min(520px,100%);
+  max-height:92vh;
+  overflow:auto;
+  background:#121a21;
+  border:1px solid #3d4b56;
+  border-radius:18px;
+  padding:18px;
+  position:relative;
+}
+.modalClose{
+  position:absolute;
+  right:10px;
+  top:7px;
+  width:40px;
+  height:40px;
+  border:0;
+  background:transparent;
+  color:#fff;
+  font-size:30px;
+}
+.modalTitle{
+  font-size:18px;
+  font-weight:900;
+  margin:4px 42px 18px 0;
+}
+.modalActions{
+  display:grid;
+  gap:9px;
+  margin-top:14px;
+}
+.save,.deleteBtn{
+  border:0;
+  border-radius:11px;
+  padding:12px;
+  font-weight:800;
+}
+.save{background:#f7f8fa;color:#111}
+.deleteBtn{background:#ff5965;color:#fff}
+.record{cursor:pointer}
 </style>
 </head>
 
@@ -403,6 +455,52 @@ button{cursor:pointer}
     <div id="all" class="records"></div>
   </div>
 </section>
+
+<div id="recordModal" class="modal hidden" aria-hidden="true">
+  <div class="modalCard">
+    <button class="modalClose" type="button" onclick="closeRecordModal()">×</button>
+    <div class="modalTitle" id="modalTitle">Editar registro</div>
+
+    <div class="field">
+      <label id="modalThirdLabel">Cliente / Proveedor</label>
+      <input id="modalTercero" class="input">
+    </div>
+
+    <div class="field">
+      <label>Concepto</label>
+      <input id="modalConcepto" class="input">
+    </div>
+
+    <div class="two">
+      <div class="field">
+        <label id="modalAmountLabel">Importe</label>
+        <input id="modalTotal" class="input" type="number" min="0" step=".01" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label>IVA %</label>
+        <select id="modalIva" class="select">
+          <option value="21">21%</option>
+          <option value="10">10%</option>
+          <option value="4">4%</option>
+          <option value="0">0%</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="calc">
+      <div class="box"><small>Base imponible</small><strong id="modalBase">0,00 €</strong></div>
+      <div class="box"><small id="modalIvaLabel">IVA</small><strong id="modalIvaValue">0,00 €</strong></div>
+      <div class="box" id="modalTotalBox"><small>Total</small><strong id="modalTotalValue">0,00 €</strong></div>
+    </div>
+
+    <div id="modalMsg" class="msg"></div>
+
+    <div class="modalActions">
+      <button class="save" type="button" onclick="saveEditedRecord()">Guardar cambios</button>
+      <button class="deleteBtn" type="button" onclick="deleteCurrentRecord()">Eliminar registro</button>
+    </div>
+  </div>
+</div>
 
 <nav class="bottom">
   <button id="nh" class="ay" onclick="goHome()">
@@ -653,7 +751,7 @@ function showToast(tipo){
 function row(r){
   const compra=r.tipo==="Compra";
   return `
-    <div class="record">
+    <div class="record" onclick="openRecord(${Number(r.fila)||0},'${compra?"Compra":"Facturado"}')">
       <div class="ricon ${compra?"y":"p"}">
         ${compra
           ? '<svg viewBox="0 0 48 48" fill="none" stroke="#111" stroke-width="3"><circle cx="19" cy="40" r="2"/><circle cx="37" cy="40" r="2"/><path d="M4 7h6l4 24h25l5-18H12"/></svg>'
@@ -668,6 +766,145 @@ function row(r){
       <div class="ramount">${euro(r.total)}</div>
       <div class="rarrow">›</div>
     </div>`;
+}
+
+let editingRecord=null;
+
+function calcModal(){
+  if(!editingRecord)return;
+  const amount=Number($("modalTotal").value)||0;
+  const ivaPct=Number($("modalIva").value)||0;
+  const compra=editingRecord.tipo==="Compra";
+
+  if(compra){
+    const base=ivaPct?amount/(1+ivaPct/100):amount;
+    const iva=amount-base;
+    $("modalBase").textContent=euro(base);
+    $("modalIvaValue").textContent=euro(iva);
+    $("modalTotalValue").textContent=euro(amount);
+  }else{
+    const base=amount;
+    const iva=base*ivaPct/100;
+    const total=base+iva;
+    $("modalBase").textContent=euro(base);
+    $("modalIvaValue").textContent=euro(iva);
+    $("modalTotalValue").textContent=euro(total);
+  }
+}
+
+function openRecord(fila,tipo){
+  const r=records.find(x=>Number(x.fila)===Number(fila) && x.tipo===tipo);
+  if(!r)return;
+
+  editingRecord=r;
+  $("modalTitle").textContent=tipo==="Compra"?"Editar compra":"Editar factura";
+  $("modalThirdLabel").textContent=tipo==="Compra"?"Tienda / Proveedor":"Cliente";
+  $("modalAmountLabel").textContent=tipo==="Compra"?"Importe total (IVA incluido)":"Base imponible (sin IVA)";
+  $("modalIvaLabel").textContent=tipo==="Compra"?"IVA soportado":"IVA repercutido";
+
+  $("modalTercero").value=r.tercero||"";
+  $("modalConcepto").value=r.concepto||"";
+  $("modalIva").value=String(Number(r.ivaPorcentaje)||0);
+  $("modalTotal").value=tipo==="Compra"
+    ?Number(r.total||0).toFixed(2)
+    :Number(r.base||0).toFixed(2);
+  $("modalMsg").className="msg";
+  $("modalMsg").textContent="";
+  $("recordModal").classList.remove("hidden");
+  $("recordModal").setAttribute("aria-hidden","false");
+  calcModal();
+}
+
+function closeRecordModal(){
+  editingRecord=null;
+  $("recordModal").classList.add("hidden");
+  $("recordModal").setAttribute("aria-hidden","true");
+}
+
+$("modalTotal").addEventListener("input",calcModal);
+$("modalIva").addEventListener("change",calcModal);
+
+async function postAction(payload){
+  await fetch(SCRIPT_URL,{
+    method:"POST",
+    mode:"no-cors",
+    headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body:JSON.stringify(payload)
+  });
+  await new Promise(resolve=>setTimeout(resolve,700));
+  await syncFromSheets();
+}
+
+async function saveEditedRecord(){
+  if(!editingRecord)return;
+
+  const tercero=$("modalTercero").value.trim();
+  const concepto=$("modalConcepto").value.trim();
+  const amount=Number($("modalTotal").value);
+  const ivaPct=Number($("modalIva").value)||0;
+  const m=$("modalMsg");
+
+  if(!tercero||!concepto||!amount||amount<=0){
+    m.className="msg err";
+    m.textContent="Completa todos los campos.";
+    return;
+  }
+
+  const compra=editingRecord.tipo==="Compra";
+  const payload={accion:"editar",tipo:editingRecord.tipo,fila:Number(editingRecord.fila),tercero,concepto,ivaPorcentaje:ivaPct};
+
+  if(compra){
+    payload.total=+amount.toFixed(2);
+  }else{
+    payload.base=+amount.toFixed(2);
+  }
+
+  m.className="msg";
+  m.textContent="Guardando cambios...";
+
+  try{
+    await postAction(payload);
+    const updated=records.find(r=>Number(r.fila)===Number(payload.fila) && r.tipo===payload.tipo);
+
+    if(!updated || updated.tercero!==tercero || updated.concepto!==concepto){
+      throw new Error("No se pudo confirmar el cambio.");
+    }
+
+    closeRecordModal();
+    showToastMessage("Registro actualizado","Los cambios se han guardado en Google Sheets.");
+  }catch(e){
+    console.error(e);
+    m.className="msg err";
+    m.textContent="No se ha podido guardar el cambio.";
+  }
+}
+
+async function deleteCurrentRecord(){
+  if(!editingRecord)return;
+
+  if(!confirm("¿Seguro que quieres eliminar este registro? Esta acción también lo eliminará de Google Sheets.")) return;
+
+  const m=$("modalMsg");
+  m.className="msg";
+  m.textContent="Eliminando...";
+
+  try{
+    const fila=Number(editingRecord.fila);
+    const tipo=editingRecord.tipo;
+
+    await postAction({accion:"eliminar",tipo,fila});
+
+    if(records.some(r=>Number(r.fila)===fila && r.tipo===tipo)){
+      throw new Error("No se pudo confirmar la eliminación.");
+    }
+
+    closeRecordModal();
+    showToastMessage("Registro eliminado","El registro se ha eliminado de Google Sheets.");
+  }catch(e){
+    console.error(e);
+    m.className="msg err";
+    m.textContent="No se ha podido eliminar el registro.";
+  }
 }
 
 function syncFromSheets(){
