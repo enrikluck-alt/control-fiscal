@@ -297,7 +297,8 @@ button{cursor:pointer}
 }
 .save{background:#f7f8fa;color:#111}
 .deleteBtn{background:#ff5965;color:#fff}
-.record{cursor:pointer}
+.record{cursor:pointer;user-select:none;-webkit-tap-highlight-color:rgba(255,223,24,.18)}
+.record:active{transform:scale(.995)}
 </style>
 </head>
 
@@ -752,7 +753,10 @@ function row(r){
   const compra=r.tipo==="Compra";
   const recordIndex=records.indexOf(r);
   return `
-    <div class="record" data-fila="${Number(r.fila)||0}" data-tipo="${compra?"Compra":"Facturado"}" role="button" tabindex="0">
+    <div class="record" role="button" tabindex="0"
+         data-record-index="${recordIndex}"
+         onclick="window.openRecordByIndex(${recordIndex})"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.openRecordByIndex(${recordIndex})}">
       <div class="ricon ${compra?"y":"p"}">
         ${compra
           ? '<svg viewBox="0 0 48 48" fill="none" stroke="#111" stroke-width="3"><circle cx="19" cy="40" r="2"/><circle cx="37" cy="40" r="2"/><path d="M4 7h6l4 24h25l5-18H12"/></svg>'
@@ -769,45 +773,13 @@ function row(r){
     </div>`;
 }
 
-document.addEventListener("click",function(e){
-  const card=e.target.closest(".record[data-record-index]");
-  if(!card)return;
-  const index=Number(card.dataset.recordIndex);
-  if(Number.isInteger(index) && records[index]) openRecordByIndex(index);
-});
-
-document.addEventListener("keydown",function(e){
-  if(e.key!=="Enter" && e.key!==" ")return;
-  const card=e.target.closest(".record[data-record-index]");
-  if(!card)return;
-  e.preventDefault();
-  const index=Number(card.dataset.recordIndex);
-  if(Number.isInteger(index) && records[index]) openRecordByIndex(index);
-});
-
 function openRecordByIndex(index){
-  const r=records[index];
+  const r=records[Number(index)];
   if(!r)return;
   openRecordData(r);
 }
 
 let editingRecord=null;
-
-// V12: gestión de clics mediante delegación de eventos.
-// Así las tarjetas generadas dinámicamente siempre responden al toque/clic.
-document.addEventListener("click",function(e){
-  const card=e.target.closest(".record[data-fila]");
-  if(!card) return;
-  openRecord(Number(card.dataset.fila),card.dataset.tipo);
-});
-
-document.addEventListener("keydown",function(e){
-  if(e.key!=="Enter" && e.key!==" ") return;
-  const card=e.target.closest(".record[data-fila]");
-  if(!card) return;
-  e.preventDefault();
-  openRecord(Number(card.dataset.fila),card.dataset.tipo);
-});
 
 function calcModal(){
   if(!editingRecord)return;
