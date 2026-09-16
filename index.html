@@ -212,6 +212,15 @@ button{cursor:pointer}
 .toast.y button{background:var(--yellow)}
 .toast.p button{background:var(--purple)}
 .hidden{display:none!important}
+
+
+.reshint{
+  font-size:10px;
+  color:#737d85;
+  padding:0 13px 12px;
+  text-align:right;
+}
+.resultrow strong{font-size:17px}
 </style>
 </head>
 
@@ -309,11 +318,8 @@ button{cursor:pointer}
 
   <div class="page">
     <div class="field">
-      <select id="summaryPeriod" class="select">
-        <option value="all">Todo el año 2026</option>
-        <option value="2026-09">Septiembre 2026</option>
-        <option value="2026-08">Agosto 2026</option>
-      </select>
+      <label>PERÍODO</label>
+      <select id="summaryPeriod" class="select"></select>
     </div>
 
     <div class="sumgrid">
@@ -324,7 +330,8 @@ button{cursor:pointer}
     <div class="ivapanel">
       <div class="ivarow"><span class="green">↓　IVA Soportado (Compras)</span><strong id="sis">0,00 €</strong></div>
       <div class="ivarow"><span class="red">↑　IVA Repercutido (Facturación)</span><strong id="sir">0,00 €</strong></div>
-      <div class="ivarow"><span>Resultado IVA</span><strong id="res">0,00 €</strong></div>
+      <div class="ivarow resultrow"><span id="resLabel">Resultado IVA</span><strong id="res">0,00 €</strong></div>
+      <div id="resHint" class="reshint">IVA repercutido − IVA soportado</div>
     </div>
 
     <div class="counts">
@@ -552,6 +559,11 @@ async function sendRecord(tipo){
   m.textContent="Guardando en Google Sheets...";
 
   try{
+    /*
+      Apps Script responde correctamente al POST, pero el navegador usa
+      no-cors, por lo que no podemos leer la respuesta HTTP. Por eso,
+      después del POST volvemos a leer Google Sheets mediante JSONP.
+    */
     await fetch(SCRIPT_URL,{
       method:"POST",
       mode:"no-cors",
@@ -559,15 +571,29 @@ async function sendRecord(tipo){
       body:JSON.stringify(payload)
     });
 
-    records.unshift({...payload,fecha:new Date().toISOString()});
-    localStorage.setItem("cf_records",JSON.stringify(records.slice(0,200)));
+    // Dar un pequeño margen a Apps Script para terminar el appendRow.
+    await new Promise(resolve=>setTimeout(resolve,700));
+
+    const data=await syncFromSheets();
+
+    const encontrado=(data.compras||[]).concat(data.facturacion||[]).some(r=>
+      r.tipo===tipo &&
+      String(r.tercero||"")===tercero &&
+      String(r.concepto||"")===concepto &&
+      Math.abs(Number(r.total||0)-Number(payload.total||0))<0.01
+    );
+
+    if(!encontrado){
+      throw new Error("El registro no aparece todavía en Google Sheets.");
+    }
 
     m.className="msg ok";
     m.textContent="Guardado correctamente ✓";
     setTimeout(()=>showToast(tipo),250);
   }catch(e){
     m.className="msg err";
-    m.textContent="Error de conexión.";
+    m.textContent="No se ha podido confirmar el registro en Google Sheets.";
+    console.error(e);
   }finally{
     b.disabled=false;
   }
@@ -651,8 +677,11 @@ async function refreshData(showMessage=false){
   try{
     await syncFromSheets();
     if(showMessage) showToastMessage("Datos actualizados", "Los registros se han cargado desde Google Sheets.");
+    return true;
   }catch(e){
-    if(showMessage) showToastMessage("Sin conexión", "Se muestran los últimos datos guardados en este dispositivo.");
+    console.error(e);
+    if(showMessage) showToastMessage("Sin conexión", "No se pudo leer Google Sheets. Se mantienen los últimos datos guardados.");
+    return false;
   }
 }
 
@@ -688,10 +717,43 @@ function renderAll(){
     :'<div style="padding:22px;text-align:center;color:#66717b">No hay registros</div>';
 }
 
+function buildSummaryPeriods(){
+  const sel=$("summaryPeriod");
+  const months=[
+    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+  ];
+
+  const years=new Set([new Date().getFullYear()]);
+  records.forEach(r=>{
+    const d=new Date(r.fecha);
+    if(!Number.isNaN(d.getTime())) years.add(d.getFullYear());
+  });
+
+  const currentYear=new Date().getFullYear();
+  const previous=sel.value;
+
+  sel.innerHTML=`<option value="all">Todo el año ${currentYear}</option>`;
+
+  [...years].sort((a,b)=>b-a).forEach(year=>{
+    sel.innerHTML+=`<option value="${year}">Todo el año ${year}</option>`;
+    for(let m=1;m<=12;m++){
+      const key=year+"-"+String(m).padStart(2,"0");
+      sel.innerHTML+=`<option value="${key}">${months[m-1]} ${year}</option>`;
+    }
+  });
+
+  if(previous && [...sel.options].some(o=>o.value===previous)){
+    sel.value=previous;
+  }
+}
+
 function openSummary(){
   only("summaryPage");
   nav("sum");
+  buildSummaryPeriods();
   updateSummary();
+  refreshData(false);
 }
 
 function updateSummary(){
@@ -699,36 +761,55 @@ function updateSummary(){
   let c=0,f=0,ivs=0,ivr=0,nc=0,nf=0;
 
   records.forEach(r=>{
+    const d=new Date(r.fecha);
     if(period!=="all"){
-      const d=new Date(r.fecha);
-      const key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
-      if(key!==period)return;
+      if(period.length===4){
+        if(Number.isNaN(d.getTime()) || d.getFullYear()!==Number(period)) return;
+      }else{
+        const key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+        if(key!==period)return;
+      }
     }
 
     if(r.tipo==="Compra"){
       c+=Number(r.total)||0;
       ivs+=Number(r.iva)||0;
       nc++;
-    }else{
+    }else if(r.tipo==="Facturado" || r.tipo==="Facturación"){
       f+=Number(r.total)||0;
       ivr+=Number(r.iva)||0;
       nf++;
     }
   });
 
+  const resultado=ivr-ivs;
+
   $("sc").textContent=euro(c);
   $("sf").textContent=euro(f);
   $("sis").textContent=euro(ivs);
   $("sir").textContent=euro(ivr);
-  $("res").textContent=euro(ivr-ivs);
+  $("res").textContent=euro(Math.abs(resultado));
   $("nc").textContent=nc;
   $("nf").textContent=nf;
+
+  if(resultado>0){
+    $("resLabel").textContent="IVA repercutido pendiente";
+    $("resHint").textContent="Hay más IVA repercutido que soportado";
+  }else if(resultado<0){
+    $("resLabel").textContent="IVA soportado pendiente";
+    $("resHint").textContent="Hay más IVA soportado que repercutido";
+  }else{
+    $("resLabel").textContent="Resultado IVA";
+    $("resHint").textContent="IVA repercutido − IVA soportado";
+  }
 }
 
 $("summaryPeriod").addEventListener("change",updateSummary);
 
+buildSummaryPeriods();
 renderLatest();
 refreshData(false);
+
 </script>
 </body>
 </html>
