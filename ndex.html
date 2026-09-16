@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1116">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Control Fiscal</title>
+
+<style>
+:root{
+  --bg:#080e13;--card:#121a21;--line:#3d4b56;
+  --yellow:#ffdf18;--purple:#df72ef;--white:#f6f8fa;
+  --muted:#aeb7bf;--green:#49ee9d;--red:#ff5965;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;background:var(--bg);color:var(--white);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Arial,sans-serif;
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{
+  width:100%;max-width:560px;min-height:100vh;margin:auto;
+  background:linear-gradient(180deg,#0a1015,#0a1117);
+  padding-bottom:82px;
+}
+.hero{padding:10px 15px 13px}
+.logos{
+  display:flex;
+  gap:16px;
+  justify-content:center;
+  align-items:center;
+}
+.logos .logo{
+  width:calc((100% - 16px)/2);
+  max-width:calc((100% - 16px)/2);
+  height:100px;
+  object-fit:contain;
+  flex:0 0 calc((100% - 16px)/2);
+}
+.logo{
+  width:46%;
+  height:100px;
+  object-fit:contain;
+  display:block;
+  flex:0 0 46%;
+  max-width:46%;
+}
+.title{
+  text-align:center;font-size:29px;font-weight:900;
+  line-height:1.05;margin-top:1px;
+}
+.tag{
+  text-align:center;font-size:9px;letter-spacing:2px;
+  color:#b7c0c8;margin-top:5px;
+}
+.page{padding:11px 16px}
+.homegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.home{
+  border:0;border-radius:14px;min-height:88px;padding:12px 10px;
+  display:flex;align-items:center;color:#111;cursor:pointer;
+}
+.home.full{grid-column:1/-1;min-height:78px;background:#f7f8fa}
+.home.y{background:linear-gradient(135deg,#ffe934,#ffdc14)}
+.home.p{background:linear-gradient(135deg,#ee8af8,#d86be9)}
+.home .icon{
+  width:48px;height:48px;display:grid;place-items:center;flex:none;
+}
+.home .icon svg{width:38px;height:38px}
+.home .text{flex:1;text-align:left}
+.home b{display:block;font-size:16px}
+.home small{display:block;font-size:9px;margin-top:4px}
+.chev{font-size:27px}
+.section{
+  display:flex;justify-content:space-between;align-items:center;
+  margin:17px 2px 8px;
+}
+.section h3{margin:0;font-size:14px}
+.outline{
+  background:transparent;border:1px solid #4a5863;color:#fff;
+  border-radius:11px;padding:7px 11px;font-size:10px;
+}
+.records{
+  background:#f7f8fa;color:#111;border-radius:12px;overflow:hidden;
+}
+.record{
+  display:flex;align-items:center;gap:8px;padding:9px;
+  border-bottom:1px solid #dfe3e6;
+}
+.record:last-child{border:0}
+.ricon{
+  width:32px;height:32px;border-radius:9px;
+  display:grid;place-items:center;flex:none;
+}
+.ricon.y{background:var(--yellow)}
+.ricon.p{background:#e47aef}
+.ricon svg{width:21px;height:21px}
+.rbody{flex:1;min-width:0}
+.rtitle{font-size:12px;font-weight:800}
+.rdesc{
+  font-size:10px;color:#555e66;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
+}
+.rdate{font-size:8px;color:#777}
+.ramount{font-size:12px;font-weight:900;white-space:nowrap}
+.rarrow{font-size:18px;color:#68727b}
+.info{
+  display:flex;align-items:center;gap:10px;background:#1a232b;
+  border:1px solid #303d47;border-radius:12px;margin-top:10px;padding:10px;
+}
+.info svg{width:28px;flex:none}
+.ib{flex:1}
+.ib b{display:block;font-size:10px}
+.ib span{font-size:8px;color:#c0c7cd}
+.ibrand{
+  text-align:right;font-size:7px;letter-spacing:1px;
+  color:#aeb7bf;font-weight:800;
+}
+.bottom{
+  position:fixed;z-index:50;bottom:0;left:50%;
+  transform:translateX(-50%);width:min(560px,100%);height:76px;
+  background:#0b1217;border-top:1px solid #29343c;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.bottom button{
+  border:0;background:transparent;color:#aeb7bf;
+  font-size:9px;font-weight:700;
+}
+.bottom svg{display:block;width:25px;height:25px;margin:0 auto 2px}
+.bottom .ay{color:var(--yellow)}
+.bottom .ap{color:var(--purple)}
+.header{
+  display:flex;align-items:center;gap:10px;padding:18px 16px 12px;
+}
+.back{border:0;background:none;color:#fff;font-size:32px;padding:0}
+.headericon{width:30px;height:30px;flex:none}
+.headericon svg{width:30px;height:30px}
+.header h2{margin:0;font-size:21px}
+.header p{margin:4px 0 0;color:#adb7bf;font-size:10px}
+.form{padding:0 16px}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}
+.input,.select{
+  width:100%;height:45px;background:#111a21;color:#eef1f3;
+  border:1px solid #53616d;border-radius:10px;padding:0 12px;font-size:14px;
+}
+.input::placeholder{color:#9da7b0}
+.two{display:grid;grid-template-columns:1fr 104px;gap:9px}
+.calc{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:7px;margin:3px 0 14px;
+}
+.box{
+  background:#111920;border:1px solid #3b4b57;border-radius:10px;padding:9px;
+}
+.box small{font-size:8px;color:#adb7bf}
+.box strong{display:block;font-size:15px;margin-top:5px}
+.box.y{background:var(--yellow);border-color:var(--yellow);color:#111}
+.box.p{background:var(--purple);border-color:var(--purple);color:#111}
+.save{
+  width:100%;height:48px;border:0;border-radius:10px;
+  font-size:13px;font-weight:900;
+}
+.save.y{background:var(--yellow)}
+.save.p{background:var(--purple)}
+.msg{text-align:center;min-height:18px;font-size:12px;margin-top:8px}
+.ok{color:var(--green)}
+.err{color:#ff717a}
+.sumgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sum{padding:12px;border-radius:11px;color:#111}
+.sum.y{background:var(--yellow)}
+.sum.p{background:var(--purple)}
+.sum small{font-size:9px}
+.sum b{display:block;font-size:18px;margin-top:5px}
+.ivapanel{
+  margin-top:9px;background:#111a21;border:1px solid #3b4b57;
+  border-radius:12px;padding:11px;
+}
+.ivarow{
+  display:flex;justify-content:space-between;gap:10px;
+  padding:8px 0;border-bottom:1px solid #2c3942;font-size:11px;
+}
+.ivarow:last-child{border:0}
+.ivarow strong{font-size:14px;white-space:nowrap}
+.green{color:var(--green)}
+.red{color:var(--red)}
+.counts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.count{border:1px solid #3b4b57;border-radius:11px;padding:11px}
+.count small{font-size:8px;color:#aeb7bf}
+.count b{display:block;font-size:18px;margin-top:4px}
+.search{display:flex;gap:7px;margin-bottom:9px}
+.search input{flex:1}
+.filter{
+  width:42px;border:1px solid #46545f;border-radius:10px;
+  background:#111a21;color:#fff;font-size:20px;
+}
+.toast{
+  position:fixed;z-index:100;left:50%;bottom:92px;
+  transform:translateX(-50%);width:min(350px,calc(100% - 30px));
+  background:#101920;border:1px solid #40515d;border-radius:16px;
+  padding:19px;text-align:center;box-shadow:0 18px 50px #0009;
+}
+.check{font-size:52px;color:var(--green)}
+.toast h3{margin:6px 0}
+.toast p{font-size:11px;color:#b9c1c8}
+.toast button{
+  width:100%;height:42px;border:0;border-radius:10px;font-weight:900;
+}
+.toast.y button{background:var(--yellow)}
+.toast.p button{background:var(--purple)}
+.hidden{display:none!important}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<section id="home">
+  <div class="hero">
+    <div class="logos">
+      <img class="logo" src="https://raw.githubusercontent.com/enrikluck-alt/control-fiscal/main/electrochispas-logo.png?v=8" alt="ElectroChispas">
+      <img class="logo" src="https://raw.githubusercontent.com/enrikluck-alt/control-fiscal/main/chispas-sound-logo.png?v=8" alt="Chispas Sound">
+    </div>
+    <div class="title">CONTROL FISCAL</div>
+    <div class="tag">REGISTRA · CONTROLA · SIMPLIFICA</div>
+  </div>
+
+  <div class="page">
+    <div class="homegrid">
+
+      <button class="home y" onclick="openForm('Compra')">
+        <div class="icon">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3">
+            <circle cx="19" cy="40" r="2"/><circle cx="37" cy="40" r="2"/>
+            <path d="M4 7h6l4 24h25l5-18H12"/><path d="M18 16h20"/>
+          </svg>
+        </div>
+        <div class="text"><b>COMPRAS</b><small>REGISTRA TUS GASTOS</small></div>
+        <div class="chev">›</div>
+      </button>
+
+      <button class="home p" onclick="openForm('Facturado')">
+        <div class="icon">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3">
+            <path d="M12 4h20l9 9v31H12z"/>
+            <path d="M32 4v10h9M19 24h15M19 31h15M19 17h7"/>
+          </svg>
+        </div>
+        <div class="text"><b>FACTURACIÓN</b><small>REGISTRA TUS INGRESOS</small></div>
+        <div class="chev">›</div>
+      </button>
+
+      <button class="home full" onclick="openSummary()">
+        <div class="icon">
+          <svg viewBox="0 0 48 48" fill="currentColor">
+            <rect x="5" y="25" width="8" height="18" rx="2"/>
+            <rect x="19" y="14" width="8" height="29" rx="2"/>
+            <rect x="33" y="4" width="8" height="39" rx="2"/>
+          </svg>
+        </div>
+        <div class="text"><b>RESUMEN</b><small>VISUALIZA TUS TOTALES Y EL IVA</small></div>
+        <div class="chev">›</div>
+      </button>
+
+    </div>
+
+    <div class="section">
+      <h3>ÚLTIMOS REGISTROS</h3>
+      <button class="outline" onclick="openRecords()">Ver todos　›</button>
+    </div>
+
+    <div id="latest" class="records"></div>
+
+    <div class="info">
+      <svg viewBox="0 0 40 40" fill="currentColor">
+        <rect x="4" y="22" width="7" height="14" rx="2"/>
+        <rect x="16" y="14" width="7" height="22" rx="2"/>
+        <rect x="28" y="6" width="7" height="30" rx="2"/>
+      </svg>
+      <div class="ib">
+        <b>Pequeños registros, grandes decisiones.</b>
+        <span>Controla hoy, crece mañana.</span>
+      </div>
+      <div class="ibrand">ELECTROCHISPAS<br>&<br>CHISPAS SOUND</div>
+    </div>
+  </div>
+</section>
+
+<section id="formPage" class="hidden">
+  <div id="formHeader" class="header"></div>
+  <div id="formBody"></div>
+</section>
+
+<section id="summaryPage" class="hidden">
+  <div class="header">
+    <button class="back" onclick="goHome()">‹</button>
+    <div class="headericon">
+      <svg viewBox="0 0 48 48" fill="currentColor">
+        <rect x="5" y="25" width="8" height="18" rx="2"/>
+        <rect x="19" y="14" width="8" height="29" rx="2"/>
+        <rect x="33" y="4" width="8" height="39" rx="2"/>
+      </svg>
+    </div>
+    <div><h2>RESUMEN</h2><p>Consulta tus totales y el estado del IVA</p></div>
+  </div>
+
+  <div class="page">
+    <div class="field">
+      <select id="summaryPeriod" class="select">
+        <option value="all">Todo el año 2026</option>
+        <option value="2026-09">Septiembre 2026</option>
+        <option value="2026-08">Agosto 2026</option>
+      </select>
+    </div>
+
+    <div class="sumgrid">
+      <div class="sum y"><small>Total Compras</small><b id="sc">0,00 €</b></div>
+      <div class="sum p"><small>Total Facturación</small><b id="sf">0,00 €</b></div>
+    </div>
+
+    <div class="ivapanel">
+      <div class="ivarow"><span class="green">↓　IVA Soportado (Compras)</span><strong id="sis">0,00 €</strong></div>
+      <div class="ivarow"><span class="red">↑　IVA Repercutido (Facturación)</span><strong id="sir">0,00 €</strong></div>
+      <div class="ivarow"><span>Resultado IVA</span><strong id="res">0,00 €</strong></div>
+    </div>
+
+    <div class="counts">
+      <div class="count">
+        <small>Número de Compras</small><b id="nc">0</b>
+      </div>
+      <div class="count">
+        <small>Número de Facturas</small><b id="nf">0</b>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="recordsPage" class="hidden">
+  <div class="header">
+    <button class="back" onclick="goHome()">‹</button>
+    <div class="headericon">
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3">
+        <path d="M12 4h20l9 9v31H12z"/>
+        <path d="M32 4v10h9M19 24h15M19 31h15M19 17h7"/>
+      </svg>
+    </div>
+    <div><h2>REGISTROS</h2><p>Todos tus movimientos</p></div>
+  </div>
+
+  <div class="page">
+    <div class="search">
+      <input id="search" class="input" placeholder="Buscar..." oninput="renderAll()">
+      <button class="filter" aria-label="Filtro">≡</button>
+    </div>
+    <div id="all" class="records"></div>
+  </div>
+</section>
+
+<nav class="bottom">
+  <button id="nh" class="ay" onclick="goHome()">
+    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3">
+      <path d="M7 22 24 8l17 14v19H7z"/><path d="M18 41V27h12v14"/>
+    </svg>Inicio
+  </button>
+
+  <button id="nb" onclick="openForm('Compra')">
+    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3">
+      <circle cx="19" cy="40" r="2"/><circle cx="37" cy="40" r="2"/>
+      <path d="M4 7h6l4 24h25l5-18H12"/>
+    </svg>Compras
+  </button>
+
+  <button id="ns" onclick="openForm('Facturado')">
+    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3">
+      <path d="M12 4h20l9 9v31H12z"/>
+      <path d="M32 4v10h9M19 24h15M19 31h15"/>
+    </svg>Facturación
+  </button>
+
+  <button id="nr" onclick="openSummary()">
+    <svg viewBox="0 0 48 48" fill="currentColor">
+      <rect x="5" y="25" width="8" height="18" rx="2"/>
+      <rect x="19" y="14" width="8" height="29" rx="2"/>
+      <rect x="33" y="4" width="8" height="39" rx="2"/>
+    </svg>Resumen
+  </button>
+</nav>
+
+</div>
+
+<script>
+const SCRIPT_URL="https://script.google.com/macros/s/AKfycbz22dVLin4EU8IQF_7RinH0eRff7MH0TwN3KplpaxdrRRSTZwVKEk7DH-I472JLRUdBeg/exec";
+
+const $=id=>document.getElementById(id);
+let records=JSON.parse(localStorage.getItem("cf_records")||"[]");
+
+const euro=n=>new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR"}).format(Number(n)||0);
+
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+}[c]));
+
+const dateText=d=>{
+  const x=new Date(d);
+  return Number.isNaN(x.getTime())?"":x.toLocaleDateString("es-ES");
+};
+
+function calc(total,iva){
+  total=Number(total)||0;
+  iva=Number(iva)||0;
+  const base=iva?total/(1+iva/100):total;
+  return {total,base,iva:total-base};
+}
+
+function only(id){
+  ["home","formPage","summaryPage","recordsPage"].forEach(x=>{
+    $(x).classList.toggle("hidden",x!==id);
+  });
+}
+
+function nav(x){
+  document.querySelectorAll(".bottom button").forEach(b=>b.classList.remove("ay","ap"));
+  if(x==="home") $("nh").classList.add("ay");
+  if(x==="buy") $("nb").classList.add("ay");
+  if(x==="sale") $("ns").classList.add("ap");
+  if(x==="sum") $("nr").classList.add("ay");
+}
+
+function goHome(){
+  only("home");
+  nav("home");
+  renderLatest();
+}
+
+function openForm(tipo){
+  only("formPage");
+  nav(tipo==="Compra"?"buy":"sale");
+
+  const c=tipo==="Compra";
+
+  $("formHeader").dataset.tipo=tipo;
+  $("formHeader").innerHTML=`
+    <button class="back" onclick="goHome()">‹</button>
+    <div class="headericon">
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3">
+        ${c
+          ? '<circle cx="19" cy="40" r="2"/><circle cx="37" cy="40" r="2"/><path d="M4 7h6l4 24h25l5-18H12"/>'
+          : '<path d="M12 4h20l9 9v31H12z"/><path d="M32 4v10h9M19 24h15M19 31h15"/>'
+        }
+      </svg>
+    </div>
+    <div>
+      <h2>${c?"COMPRAS":"FACTURACIÓN"}</h2>
+      <p>${c?"Registra tus gastos de forma rápida":"Registra tus ingresos de forma rápida"}</p>
+    </div>`;
+
+  $("formBody").innerHTML=`
+    <div class="form">
+      <div class="field">
+        <label>${c?"Tienda / Proveedor":"Cliente"}</label>
+        <input id="tercero" class="input" placeholder="${c?"Ej. Leroy Merlin":"Ej. Ayuntamiento, empresa, particular"}">
+      </div>
+
+      <div class="field">
+        <label>Concepto</label>
+        <input id="concepto" class="input" placeholder="${c?"Ej. Cable DMX, estructura, etc.":"Ej. Sonido e iluminación, pantalla LED, etc."}">
+      </div>
+
+      <div class="two">
+        <div class="field">
+          <label>${c?"Importe total (IVA incluido)":"Base imponible (sin IVA)"}</label>
+          <input id="total" class="input" type="number" min="0" step=".01" inputmode="decimal" placeholder="0,00" oninput="recalc()">
+        </div>
+        <div class="field">
+          <label>IVA %</label>
+          <select id="iva" class="select" onchange="recalc()">
+            <option value="21">21%</option>
+            <option value="10">10%</option>
+            <option value="4">4%</option>
+            <option value="0">0%</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="calc">
+        <div class="box"><small>Base imponible</small><strong id="base">0,00 €</strong></div>
+        <div class="box"><small>IVA ${c?"soportado":"repercutido"}</small><strong id="ivaValue">0,00 €</strong></div>
+        <div class="box ${c?"y":"p"}"><small>Total</small><strong id="totalValue">0,00 €</strong></div>
+      </div>
+
+      <button id="saveBtn" class="save ${c?"y":"p"}" onclick="sendRecord('${tipo}')">
+        ${c?"GUARDAR COMPRA":"GUARDAR FACTURA"}
+      </button>
+      <div id="msg" class="msg"></div>
+    </div>`;
+}
+
+function calcRecord(tipo,importe,iva){
+  importe=Number(importe)||0;
+  iva=Number(iva)||0;
+
+  if(tipo==="Compra"){
+    const base=iva?importe/(1+iva/100):importe;
+    const soportado=importe-base;
+    return {base,iva:soportado,total:importe};
+  }
+
+  const repercutido=importe*iva/100;
+  return {base:importe,iva:repercutido,total:importe+repercutido};
+}
+
+function recalc(){
+  const total=$("total"),iva=$("iva");
+  if(!total||!iva)return;
+  const tipo=$("formHeader").dataset.tipo||"Compra";
+  const c=calcRecord(tipo,total.value,iva.value);
+  $("base").textContent=euro(c.base);
+  $("ivaValue").textContent=euro(c.iva);
+  $("totalValue").textContent=euro(c.total);
+}
+
+async function sendRecord(tipo){
+  const tercero=$("tercero").value.trim();
+  const concepto=$("concepto").value.trim();
+  const t=Number($("total").value);
+  const i=Number($("iva").value);
+  const m=$("msg");
+  const b=$("saveBtn");
+
+  if(!tercero||!concepto||!t||t<=0){
+    m.className="msg err";
+    m.textContent="Completa todos los campos.";
+    return;
+  }
+
+  const c=calcRecord(tipo,t,i);
+  const payload={
+    tipo,
+    tercero,
+    concepto,
+    base:+c.base.toFixed(2),
+    ivaPorcentaje:i,
+    iva:+c.iva.toFixed(2),
+    total:+c.total.toFixed(2)
+  };
+
+  b.disabled=true;
+  m.className="msg";
+  m.textContent="Guardando en Google Sheets...";
+
+  try{
+    /*
+      Apps Script responde correctamente al POST, pero el navegador usa
+      no-cors, por lo que no podemos leer la respuesta HTTP. Por eso,
+      después del POST volvemos a leer Google Sheets mediante JSONP.
+    */
+    await fetch(SCRIPT_URL,{
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload)
+    });
+
+    // Dar un pequeño margen a Apps Script para terminar el appendRow.
+    await new Promise(resolve=>setTimeout(resolve,700));
+
+    const data=await syncFromSheets();
+
+    const encontrado=(data.compras||[]).concat(data.facturacion||[]).some(r=>
+      r.tipo===tipo &&
+      String(r.tercero||"")===tercero &&
+      String(r.concepto||"")===concepto &&
+      Math.abs(Number(r.total||0)-Number(payload.total||0))<0.01
+    );
+
+    if(!encontrado){
+      throw new Error("El registro no aparece todavía en Google Sheets.");
+    }
+
+    m.className="msg ok";
+    m.textContent="Guardado correctamente ✓";
+    setTimeout(()=>showToast(tipo),250);
+  }catch(e){
+    m.className="msg err";
+    m.textContent="No se ha podido confirmar el registro en Google Sheets.";
+    console.error(e);
+  }finally{
+    b.disabled=false;
+  }
+}
+
+function showToast(tipo){
+  const p=tipo==="Compra";
+  const d=document.createElement("div");
+  d.id="toast";
+  d.className="toast "+(p?"y":"p");
+  d.innerHTML=`
+    <div class="check">✓</div>
+    <h3>¡${p?"Compra":"Factura"} registrada!</h3>
+    <p>El registro se ha enviado a Google Sheets.</p>
+    <button onclick="document.getElementById('toast').remove()">Aceptar</button>`;
+  document.body.appendChild(d);
+}
+
+function row(r){
+  const compra=r.tipo==="Compra";
+  return `
+    <div class="record">
+      <div class="ricon ${compra?"y":"p"}">
+        ${compra
+          ? '<svg viewBox="0 0 48 48" fill="none" stroke="#111" stroke-width="3"><circle cx="19" cy="40" r="2"/><circle cx="37" cy="40" r="2"/><path d="M4 7h6l4 24h25l5-18H12"/></svg>'
+          : '<svg viewBox="0 0 48 48" fill="none" stroke="#111" stroke-width="3"><path d="M12 4h20l9 9v31H12z"/><path d="M32 4v10h9M19 24h15M19 31h15"/></svg>'
+        }
+      </div>
+      <div class="rbody">
+        <div class="rtitle">${compra?"Compra":"Factura"}</div>
+        <div class="rdesc">${esc(r.tercero)} - ${esc(r.concepto)}</div>
+        <div class="rdate">${dateText(r.fecha)}</div>
+      </div>
+      <div class="ramount">${euro(r.total)}</div>
+      <div class="rarrow">›</div>
+    </div>`;
+}
+
+function syncFromSheets(){
+  return new Promise((resolve,reject)=>{
+    const callback="cfCallback_"+Date.now();
+    const script=document.createElement("script");
+    const timeout=setTimeout(()=>{
+      cleanup();
+      reject(new Error("Tiempo de espera agotado"));
+    },12000);
+
+    window[callback]=data=>{
+      cleanup();
+      if(!data||!data.ok){
+        reject(new Error(data?.error||"Respuesta no válida"));
+        return;
+      }
+      const server=[...(data.compras||[]),...(data.facturacion||[])];
+      server.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+      records=server;
+      localStorage.setItem("cf_records",JSON.stringify(records.slice(0,200)));
+      renderLatest();
+      if(!$('recordsPage').classList.contains('hidden')) renderAll();
+      if(!$('summaryPage').classList.contains('hidden')) updateSummary();
+      resolve(data);
+    };
+
+    script.onerror=()=>{
+      cleanup();
+      reject(new Error("No se pudo conectar con Google Sheets"));
+    };
+
+    function cleanup(){
+      clearTimeout(timeout);
+      delete window[callback];
+      script.remove();
+    }
+
+    script.src=SCRIPT_URL+"?callback="+encodeURIComponent(callback)+"&_="+Date.now();
+    document.body.appendChild(script);
+  });
+}
+
+async function refreshData(showMessage=false){
+  try{
+    await syncFromSheets();
+    if(showMessage) showToastMessage("Datos actualizados", "Los registros se han cargado desde Google Sheets.");
+    return true;
+  }catch(e){
+    console.error(e);
+    if(showMessage) showToastMessage("Sin conexión", "No se pudo leer Google Sheets. Se mantienen los últimos datos guardados.");
+    return false;
+  }
+}
+
+function showToastMessage(title,text){
+  const old=document.getElementById("toast");
+  if(old)old.remove();
+  const d=document.createElement("div");
+  d.id="toast";
+  d.className="toast y";
+  d.innerHTML=`<div class="check">✓</div><h3>${esc(title)}</h3><p>${esc(text)}</p><button onclick="document.getElementById('toast')?.remove()">Aceptar</button>`;
+  document.body.appendChild(d);
+}
+
+function renderLatest(){
+  $("latest").innerHTML=records.length
+    ?records.slice(0,4).map(row).join("")
+    :'<div style="padding:22px;text-align:center;color:#66717b">Todavía no hay registros</div>';
+}
+
+function openRecords(){
+  only("recordsPage");
+  nav("home");
+  renderAll();
+}
+
+function renderAll(){
+  const q=($("search").value||"").toLowerCase();
+  const a=records.filter(r=>
+    (r.tercero+" "+r.concepto+" "+r.tipo).toLowerCase().includes(q)
+  );
+  $("all").innerHTML=a.length
+    ?a.map(row).join("")
+    :'<div style="padding:22px;text-align:center;color:#66717b">No hay registros</div>';
+}
+
+function openSummary(){
+  only("summaryPage");
+  nav("sum");
+  updateSummary();
+}
+
+function updateSummary(){
+  const period=$("summaryPeriod").value;
+  let c=0,f=0,ivs=0,ivr=0,nc=0,nf=0;
+
+  records.forEach(r=>{
+    if(period!=="all"){
+      const d=new Date(r.fecha);
+      const key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+      if(key!==period)return;
+    }
+
+    if(r.tipo==="Compra"){
+      c+=Number(r.total)||0;
+      ivs+=Number(r.iva)||0;
+      nc++;
+    }else{
+      f+=Number(r.total)||0;
+      ivr+=Number(r.iva)||0;
+      nf++;
+    }
+  });
+
+  $("sc").textContent=euro(c);
+  $("sf").textContent=euro(f);
+  $("sis").textContent=euro(ivs);
+  $("sir").textContent=euro(ivr);
+  $("res").textContent=euro(ivr-ivs);
+  $("nc").textContent=nc;
+  $("nf").textContent=nf;
+}
+
+$("summaryPeriod").addEventListener("change",updateSummary);
+
+renderLatest();
+refreshData(false);
+refreshData(false);
+</script>
+</body>
+</html>
