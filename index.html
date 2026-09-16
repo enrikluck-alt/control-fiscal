@@ -821,12 +821,60 @@ function renderAll(){
 }
 
 
-function openSummary(){
+
+function buildSummaryPeriods(){
+  const sel=$("summaryPeriod");
+  if(!sel) return;
+
+  const months=[
+    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+  ];
+
+  const previous=sel.value || "all";
+  const years=new Set();
+
+  records.forEach(r=>{
+    const d=new Date(r.fecha);
+    if(!Number.isNaN(d.getTime())) years.add(d.getFullYear());
+  });
+
+  const currentYear=new Date().getFullYear();
+  years.add(currentYear);
+
+  sel.innerHTML=`<option value="all">Todo el año ${currentYear}</option>`;
+
+  [...years].sort((a,b)=>b-a).forEach(year=>{
+    if(year!==currentYear){
+      sel.innerHTML+=`<option value="${year}">Todo el año ${year}</option>`;
+    }
+
+    for(let m=1;m<=12;m++){
+      const key=year+"-"+String(m).padStart(2,"0");
+      sel.innerHTML+=`<option value="${key}">${months[m-1]} ${year}</option>`;
+    }
+  });
+
+  if([...sel.options].some(o=>o.value===previous)){
+    sel.value=previous;
+  }else{
+    sel.value="all";
+  }
+}
+
+async function openSummary(){
   only("summaryPage");
   nav("sum");
+
+  // Mostrar inmediatamente los datos disponibles y después sincronizar con Sheets.
   buildSummaryPeriods();
   updateSummary();
-  refreshData(false);
+
+  const ok=await refreshData(false);
+  if(ok){
+    buildSummaryPeriods();
+    updateSummary();
+  }
 }
 
 function updateSummary(){
