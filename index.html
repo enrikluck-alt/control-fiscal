@@ -839,15 +839,24 @@ function closeRecordModal(){
 $("modalTotal").addEventListener("input",calcModal);
 $("modalIva").addEventListener("change",calcModal);
 
-async function postAction(payload){
-  await fetch(SCRIPT_URL,{
-    method:"POST",
-    mode:"no-cors",
-    headers:{"Content-Type":"text/plain;charset=utf-8"},
-    body:JSON.stringify(payload)
+function callAction(payload){
+  return new Promise((resolve,reject)=>{
+    const callback="cfAction_"+Date.now()+"_"+Math.floor(Math.random()*10000);
+    const script=document.createElement("script");
+    const params=new URLSearchParams();
+    params.set("callback",callback);
+    Object.entries(payload).forEach(([k,v])=>params.set(k,String(v)));
+    const timeout=setTimeout(()=>{cleanup();reject(new Error("Tiempo de espera agotado"));},15000);
+    window[callback]=data=>{
+      cleanup();
+      if(data&&data.ok) resolve(data);
+      else reject(new Error(data?.error||"Operación no realizada"));
+    };
+    script.onerror=()=>{cleanup();reject(new Error("No se pudo conectar con Google Sheets"));};
+    function cleanup(){clearTimeout(timeout);delete window[callback];script.remove();}
+    script.src=SCRIPT_URL+"?"+params.toString()+"&_="+Date.now();
+    document.body.appendChild(script);
   });
-  await new Promise(resolve=>setTimeout(resolve,700));
-  await syncFromSheets();
 }
 
 async function saveEditedRecord(){
@@ -867,36 +876,30 @@ async function saveEditedRecord(){
 
   const compra=editingRecord.tipo==="Compra";
   const payload={accion:"editar",tipo:editingRecord.tipo,fila:Number(editingRecord.fila),tercero,concepto,ivaPorcentaje:ivaPct};
-
-  if(compra){
-    payload.total=+amount.toFixed(2);
-  }else{
-    payload.base=+amount.toFixed(2);
-  }
+  if(compra) payload.total=+amount.toFixed(2);
+  else payload.base=+amount.toFixed(2);
 
   m.className="msg";
   m.textContent="Guardando cambios...";
 
   try{
-    await postAction(payload);
+    await callAction(payload);
+    await syncFromSheets();
     const updated=records.find(r=>Number(r.fila)===Number(payload.fila) && r.tipo===payload.tipo);
-
     if(!updated || updated.tercero!==tercero || updated.concepto!==concepto){
       throw new Error("No se pudo confirmar el cambio.");
     }
-
     closeRecordModal();
     showToastMessage("Registro actualizado","Los cambios se han guardado en Google Sheets.");
   }catch(e){
     console.error(e);
     m.className="msg err";
-    m.textContent="No se ha podido guardar el cambio.";
+    m.textContent=e.message||"No se ha podido guardar el cambio.";
   }
 }
 
 async function deleteCurrentRecord(){
   if(!editingRecord)return;
-
   if(!confirm("¿Seguro que quieres eliminar este registro? Esta acción también lo eliminará de Google Sheets.")) return;
 
   const m=$("modalMsg");
@@ -906,19 +909,17 @@ async function deleteCurrentRecord(){
   try{
     const fila=Number(editingRecord.fila);
     const tipo=editingRecord.tipo;
-
-    await postAction({accion:"eliminar",tipo,fila});
-
+    await callAction({accion:"eliminar",tipo,fila});
+    await syncFromSheets();
     if(records.some(r=>Number(r.fila)===fila && r.tipo===tipo)){
       throw new Error("No se pudo confirmar la eliminación.");
     }
-
     closeRecordModal();
     showToastMessage("Registro eliminado","El registro se ha eliminado de Google Sheets.");
   }catch(e){
     console.error(e);
     m.className="msg err";
-    m.textContent="No se ha podido eliminar el registro.";
+    m.textContent=e.message||"No se ha podido eliminar el registro.";
   }
 }
 
