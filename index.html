@@ -392,7 +392,7 @@ button{cursor:pointer}
 </div>
 
 <script>
-const SCRIPT_URL="https://script.google.com/macros/s/AKfycbz-a5yGCnOTGKhy0iDIIsqPN2nYAptaizOoHKuByZXoOXemEm7_q5-ToEDFYv3Ms7jsbA/exec";
+const SCRIPT_URL="https://script.google.com/macros/s/AKfycbz22dVLin4EU8IQF_7RinH0eRff7MH0TwN3KplpaxdrRRSTZwVKEk7DH-I472JLRUdBeg/exec";
 
 const $=id=>document.getElementById(id);
 let records=JSON.parse(localStorage.getItem("cf_records")||"[]");
@@ -441,6 +441,7 @@ function openForm(tipo){
 
   const c=tipo==="Compra";
 
+  $("formHeader").dataset.tipo=tipo;
   $("formHeader").innerHTML=`
     <button class="back" onclick="goHome()">‹</button>
     <div class="headericon">
@@ -470,7 +471,7 @@ function openForm(tipo){
 
       <div class="two">
         <div class="field">
-          <label>Importe total</label>
+          <label>${c?"Importe total (IVA incluido)":"Base imponible (sin IVA)"}</label>
           <input id="total" class="input" type="number" min="0" step=".01" inputmode="decimal" placeholder="0,00" oninput="recalc()">
         </div>
         <div class="field">
@@ -497,10 +498,25 @@ function openForm(tipo){
     </div>`;
 }
 
+function calcRecord(tipo,importe,iva){
+  importe=Number(importe)||0;
+  iva=Number(iva)||0;
+
+  if(tipo==="Compra"){
+    const base=iva?importe/(1+iva/100):importe;
+    const soportado=importe-base;
+    return {base,iva:soportado,total:importe};
+  }
+
+  const repercutido=importe*iva/100;
+  return {base:importe,iva:repercutido,total:importe+repercutido};
+}
+
 function recalc(){
   const total=$("total"),iva=$("iva");
   if(!total||!iva)return;
-  const c=calc(total.value,iva.value);
+  const tipo=$("formHeader").dataset.tipo||"Compra";
+  const c=calcRecord(tipo,total.value,iva.value);
   $("base").textContent=euro(c.base);
   $("ivaValue").textContent=euro(c.iva);
   $("totalValue").textContent=euro(c.total);
@@ -520,7 +536,7 @@ async function sendRecord(tipo){
     return;
   }
 
-  const c=calc(t,i);
+  const c=calcRecord(tipo,t,i);
   const payload={
     tipo,
     tercero,
@@ -528,7 +544,7 @@ async function sendRecord(tipo){
     base:+c.base.toFixed(2),
     ivaPorcentaje:i,
     iva:+c.iva.toFixed(2),
-    total:+t.toFixed(2)
+    total:+c.total.toFixed(2)
   };
 
   b.disabled=true;
@@ -588,6 +604,66 @@ function row(r){
       <div class="ramount">${euro(r.total)}</div>
       <div class="rarrow">›</div>
     </div>`;
+}
+
+function syncFromSheets(){
+  return new Promise((resolve,reject)=>{
+    const callback="cfCallback_"+Date.now();
+    const script=document.createElement("script");
+    const timeout=setTimeout(()=>{
+      cleanup();
+      reject(new Error("Tiempo de espera agotado"));
+    },12000);
+
+    window[callback]=data=>{
+      cleanup();
+      if(!data||!data.ok){
+        reject(new Error(data?.error||"Respuesta no válida"));
+        return;
+      }
+      const server=[...(data.compras||[]),...(data.facturacion||[])];
+      server.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+      records=server;
+      localStorage.setItem("cf_records",JSON.stringify(records.slice(0,200)));
+      renderLatest();
+      if(!$('recordsPage').classList.contains('hidden')) renderAll();
+      if(!$('summaryPage').classList.contains('hidden')) updateSummary();
+      resolve(data);
+    };
+
+    script.onerror=()=>{
+      cleanup();
+      reject(new Error("No se pudo conectar con Google Sheets"));
+    };
+
+    function cleanup(){
+      clearTimeout(timeout);
+      delete window[callback];
+      script.remove();
+    }
+
+    script.src=SCRIPT_URL+"?callback="+encodeURIComponent(callback)+"&_="+Date.now();
+    document.body.appendChild(script);
+  });
+}
+
+async function refreshData(showMessage=false){
+  try{
+    await syncFromSheets();
+    if(showMessage) showToastMessage("Datos actualizados", "Los registros se han cargado desde Google Sheets.");
+  }catch(e){
+    if(showMessage) showToastMessage("Sin conexión", "Se muestran los últimos datos guardados en este dispositivo.");
+  }
+}
+
+function showToastMessage(title,text){
+  const old=document.getElementById("toast");
+  if(old)old.remove();
+  const d=document.createElement("div");
+  d.id="toast";
+  d.className="toast y";
+  d.innerHTML=`<div class="check">✓</div><h3>${esc(title)}</h3><p>${esc(text)}</p><button onclick="document.getElementById('toast')?.remove()">Aceptar</button>`;
+  document.body.appendChild(d);
 }
 
 function renderLatest(){
@@ -652,6 +728,7 @@ function updateSummary(){
 $("summaryPeriod").addEventListener("change",updateSummary);
 
 renderLatest();
+refreshData(false);
 </script>
 </body>
 </html>
