@@ -299,6 +299,11 @@ button{cursor:pointer}
 .deleteBtn{background:#ff5965;color:#fff}
 .record{cursor:pointer;user-select:none;-webkit-tap-highlight-color:rgba(255,223,24,.18)}
 .record:active{transform:scale(.995)}
+.optional{font-size:9px;color:#7f8991;font-weight:600}
+.fileInput{padding:10px}
+.fileHint{display:block;color:#737d85;font-size:9px;margin-top:5px;line-height:1.4}
+.attachment{margin-top:7px}
+.attachment a{color:#f7d91b;text-decoration:none;font-size:10px;font-weight:800}
 </style>
 </head>
 
@@ -635,6 +640,14 @@ function openForm(tipo){
         <div class="box ${c?"y":"p"}"><small>Total</small><strong id="totalValue">0,00 €</strong></div>
       </div>
 
+      ${c ? `
+      <div class="field">
+        <label>📎 Factura / justificante <span class="optional">(opcional)</span></label>
+        <input id="facturaArchivo" class="input fileInput" type="file"
+               accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+        <small class="fileHint">PDF, JPG o PNG. Puedes guardar la compra sin adjuntar ningún archivo.</small>
+      </div>` : ""}
+
       <button id="saveBtn" class="save ${c?"y":"p"}" onclick="sendRecord('${tipo}')">
         ${c?"GUARDAR COMPRA":"GUARDAR FACTURA"}
       </button>
@@ -666,6 +679,15 @@ function recalc(){
   $("totalValue").textContent=euro(c.total);
 }
 
+function readFileAsBase64(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(String(reader.result||"").split(",")[1]||"");
+    reader.onerror=()=>reject(new Error("No se pudo leer el archivo."));
+    reader.readAsDataURL(file);
+  });
+}
+
 async function sendRecord(tipo){
   const tercero=$("tercero").value.trim();
   const concepto=$("concepto").value.trim();
@@ -673,11 +695,27 @@ async function sendRecord(tipo){
   const i=Number($("iva").value);
   const m=$("msg");
   const b=$("saveBtn");
+  const fileInput=$("facturaArchivo");
+  const file=fileInput?.files?.[0]||null;
 
   if(!tercero||!concepto||!t||t<=0){
     m.className="msg err";
     m.textContent="Completa todos los campos.";
     return;
+  }
+
+  if(file){
+    const allowed=["application/pdf","image/jpeg","image/png"];
+    if(!allowed.includes(file.type)){
+      m.className="msg err";
+      m.textContent="El archivo debe ser PDF, JPG o PNG.";
+      return;
+    }
+    if(file.size>10*1024*1024){
+      m.className="msg err";
+      m.textContent="El archivo no puede superar 10 MB.";
+      return;
+    }
   }
 
   const c=calcRecord(tipo,t,i);
@@ -693,14 +731,15 @@ async function sendRecord(tipo){
 
   b.disabled=true;
   m.className="msg";
-  m.textContent="Guardando en Google Sheets...";
+  m.textContent=file ? "Subiendo factura y guardando..." : "Guardando en Google Sheets...";
 
   try{
-    /*
-      Apps Script responde correctamente al POST, pero el navegador usa
-      no-cors, por lo que no podemos leer la respuesta HTTP. Por eso,
-      después del POST volvemos a leer Google Sheets mediante JSONP.
-    */
+    if(file){
+      payload.archivoNombre=file.name;
+      payload.archivoMime=file.type;
+      payload.archivoBase64=await readFileAsBase64(file);
+    }
+
     await fetch(SCRIPT_URL,{
       method:"POST",
       mode:"no-cors",
@@ -708,9 +747,7 @@ async function sendRecord(tipo){
       body:JSON.stringify(payload)
     });
 
-    // Dar un pequeño margen a Apps Script para terminar el appendRow.
-    await new Promise(resolve=>setTimeout(resolve,700));
-
+    await new Promise(resolve=>setTimeout(resolve,900));
     const data=await syncFromSheets();
 
     const encontrado=(data.compras||[]).concat(data.facturacion||[]).some(r=>
@@ -725,11 +762,11 @@ async function sendRecord(tipo){
     }
 
     m.className="msg ok";
-    m.textContent="Guardado correctamente ✓";
+    m.textContent=file ? "Compra y factura guardadas correctamente ✓" : "Guardado correctamente ✓";
     setTimeout(()=>showToast(tipo),250);
   }catch(e){
     m.className="msg err";
-    m.textContent="No se ha podido confirmar el registro en Google Sheets.";
+    m.textContent="No se ha podido guardar la compra.";
     console.error(e);
   }finally{
     b.disabled=false;
@@ -767,6 +804,7 @@ function row(r){
         <div class="rtitle">${compra?"Compra":"Factura"}</div>
         <div class="rdesc">${esc(r.tercero)} - ${esc(r.concepto)}</div>
         <div class="rdate">${dateText(r.fecha)}</div>
+        ${compra && r.facturaUrl ? `<div class="attachment"><a href="${esc(r.facturaUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📄 Ver factura</a></div>` : ""}
       </div>
       <div class="ramount">${euro(r.total)}</div>
       <div class="rarrow">›</div>
@@ -883,12 +921,11 @@ async function saveEditedRecord(){
   m.textContent="Guardando cambios...";
 
   try{
+    // Apps Script confirma la edición directamente mediante JSONP.
+    // No hacemos una segunda comprobación por número de fila, porque
+    // puede provocar falsos errores aunque Google Sheets ya haya guardado.
     await callAction(payload);
-    await syncFromSheets();
-    const updated=records.find(r=>Number(r.fila)===Number(payload.fila) && r.tipo===payload.tipo);
-    if(!updated || updated.tercero!==tercero || updated.concepto!==concepto){
-      throw new Error("No se pudo confirmar el cambio.");
-    }
+    await syncFromSheets().catch(e=>console.warn("Actualización visual tras editar:",e));
     closeRecordModal();
     showToastMessage("Registro actualizado","Los cambios se han guardado en Google Sheets.");
   }catch(e){
