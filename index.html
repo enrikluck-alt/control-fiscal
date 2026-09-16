@@ -221,6 +221,31 @@ button{cursor:pointer}
   text-align:right;
 }
 .resultrow strong{font-size:17px}
+
+.recordFilters{
+  display:flex;
+  gap:7px;
+  margin:8px 0 10px;
+}
+.rf{
+  flex:1;
+  border:1px solid #46535e;
+  background:#111920;
+  color:#cbd2d8;
+  border-radius:10px;
+  padding:9px 6px;
+  font-size:10px;
+  font-weight:800;
+}
+.rf.active{
+  background:#f7f8fa;
+  color:#111;
+}
+.recordInfo{
+  color:#8e99a2;
+  font-size:10px;
+  margin:0 2px 7px;
+}
 </style>
 </head>
 
@@ -359,9 +384,22 @@ button{cursor:pointer}
 
   <div class="page">
     <div class="search">
-      <input id="search" class="input" placeholder="Buscar..." oninput="renderAll()">
-      <button class="filter" aria-label="Filtro">≡</button>
+      <input id="search" class="input" placeholder="Buscar cliente, proveedor o concepto..." oninput="renderAll()">
     </div>
+
+    <div class="recordFilters">
+      <button class="rf active" data-filter="all" onclick="setRecordFilter('all')">Todos</button>
+      <button class="rf" data-filter="Compra" onclick="setRecordFilter('Compra')">Compras</button>
+      <button class="rf" data-filter="Facturado" onclick="setRecordFilter('Facturado')">Facturación</button>
+    </div>
+
+    <div class="field">
+      <select id="recordPeriod" class="select" onchange="renderAll()">
+        <option value="all">Todos los períodos</option>
+      </select>
+    </div>
+
+    <div id="recordInfo" class="recordInfo"></div>
     <div id="all" class="records"></div>
   </div>
 </section>
@@ -652,7 +690,10 @@ function syncFromSheets(){
       records=server;
       localStorage.setItem("cf_records",JSON.stringify(records.slice(0,200)));
       renderLatest();
-      if(!$('recordsPage').classList.contains('hidden')) renderAll();
+      if(!$('recordsPage').classList.contains('hidden')){
+        buildRecordPeriods();
+        renderAll();
+      }
       if(!$('summaryPage').classList.contains('hidden')) updateSummary();
       resolve(data);
     };
@@ -704,49 +745,81 @@ function renderLatest(){
 function openRecords(){
   only("recordsPage");
   nav("home");
+  buildRecordPeriods();
   renderAll();
+  refreshData(false);
 }
 
-function renderAll(){
-  const q=($("search").value||"").toLowerCase();
-  const a=records.filter(r=>
-    (r.tercero+" "+r.concepto+" "+r.tipo).toLowerCase().includes(q)
-  );
-  $("all").innerHTML=a.length
-    ?a.map(row).join("")
-    :'<div style="padding:22px;text-align:center;color:#66717b">No hay registros</div>';
-}
+let recordFilter="all";
 
-function buildSummaryPeriods(){
-  const sel=$("summaryPeriod");
+function buildRecordPeriods(){
+  const sel=$("recordPeriod");
   const months=[
     "Enero","Febrero","Marzo","Abril","Mayo","Junio",
     "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
   ];
-
-  const years=new Set([new Date().getFullYear()]);
+  const previous=sel.value || "all";
+  const years=new Set();
   records.forEach(r=>{
     const d=new Date(r.fecha);
     if(!Number.isNaN(d.getTime())) years.add(d.getFullYear());
   });
+  if(!years.size) years.add(new Date().getFullYear());
 
-  const currentYear=new Date().getFullYear();
-  const previous=sel.value;
-
-  sel.innerHTML=`<option value="all">Todo el año ${currentYear}</option>`;
+  sel.innerHTML='<option value="all">Todos los períodos</option>';
 
   [...years].sort((a,b)=>b-a).forEach(year=>{
-    sel.innerHTML+=`<option value="${year}">Todo el año ${year}</option>`;
+    sel.innerHTML+=`<option value="${year}">Todo ${year}</option>`;
     for(let m=1;m<=12;m++){
       const key=year+"-"+String(m).padStart(2,"0");
       sel.innerHTML+=`<option value="${key}">${months[m-1]} ${year}</option>`;
     }
   });
 
-  if(previous && [...sel.options].some(o=>o.value===previous)){
-    sel.value=previous;
-  }
+  if([...sel.options].some(o=>o.value===previous)) sel.value=previous;
 }
+
+function setRecordFilter(filter){
+  recordFilter=filter;
+  document.querySelectorAll(".rf").forEach(b=>{
+    b.classList.toggle("active",b.dataset.filter===filter);
+  });
+  renderAll();
+}
+
+function renderAll(){
+  const q=($("search").value||"").trim().toLowerCase();
+  const period=$("recordPeriod").value;
+
+  const a=records.filter(r=>{
+    if(recordFilter!=="all" && r.tipo!==recordFilter) return false;
+
+    if(period!=="all"){
+      const d=new Date(r.fecha);
+      if(Number.isNaN(d.getTime())) return false;
+
+      if(period.length===4){
+        if(String(d.getFullYear())!==period) return false;
+      }else{
+        const key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+        if(key!==period) return false;
+      }
+    }
+
+    return (r.tercero+" "+r.concepto+" "+r.tipo).toLowerCase().includes(q);
+  });
+
+  const compraCount=a.filter(r=>r.tipo==="Compra").length;
+  const facturaCount=a.filter(r=>r.tipo==="Facturado" || r.tipo==="Facturación").length;
+
+  $("recordInfo").textContent=
+    `${a.length} registro${a.length===1?"":"s"} · ${compraCount} compra${compraCount===1?"":"s"} · ${facturaCount} factura${facturaCount===1?"":"s"}`;
+
+  $("all").innerHTML=a.length
+    ?a.map(row).join("")
+    :'<div style="padding:22px;text-align:center;color:#66717b">No hay registros con estos filtros</div>';
+}
+
 
 function openSummary(){
   only("summaryPage");
@@ -807,6 +880,7 @@ function updateSummary(){
 $("summaryPeriod").addEventListener("change",updateSummary);
 
 buildSummaryPeriods();
+buildRecordPeriods();
 renderLatest();
 refreshData(false);
 
