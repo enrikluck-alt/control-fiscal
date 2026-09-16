@@ -750,6 +750,7 @@ function showToast(tipo){
 
 function row(r){
   const compra=r.tipo==="Compra";
+  const recordIndex=records.indexOf(r);
   return `
     <div class="record" data-fila="${Number(r.fila)||0}" data-tipo="${compra?"Compra":"Facturado"}" role="button" tabindex="0">
       <div class="ricon ${compra?"y":"p"}">
@@ -766,6 +767,28 @@ function row(r){
       <div class="ramount">${euro(r.total)}</div>
       <div class="rarrow">›</div>
     </div>`;
+}
+
+document.addEventListener("click",function(e){
+  const card=e.target.closest(".record[data-record-index]");
+  if(!card)return;
+  const index=Number(card.dataset.recordIndex);
+  if(Number.isInteger(index) && records[index]) openRecordByIndex(index);
+});
+
+document.addEventListener("keydown",function(e){
+  if(e.key!=="Enter" && e.key!==" ")return;
+  const card=e.target.closest(".record[data-record-index]");
+  if(!card)return;
+  e.preventDefault();
+  const index=Number(card.dataset.recordIndex);
+  if(Number.isInteger(index) && records[index]) openRecordByIndex(index);
+});
+
+function openRecordByIndex(index){
+  const r=records[index];
+  if(!r)return;
+  openRecordData(r);
 }
 
 let editingRecord=null;
@@ -811,7 +834,10 @@ function calcModal(){
 function openRecord(fila,tipo){
   const r=records.find(x=>Number(x.fila)===Number(fila) && x.tipo===tipo);
   if(!r)return;
+  openRecordData(r);
+}
 
+function openRecordData(r){
   editingRecord=r;
   $("modalTitle").textContent=tipo==="Compra"?"Editar compra":"Editar factura";
   $("modalThirdLabel").textContent=tipo==="Compra"?"Tienda / Proveedor":"Cliente";
