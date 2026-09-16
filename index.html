@@ -28,10 +28,25 @@ button{cursor:pointer}
 }
 .hero{padding:10px 15px 13px}
 .logos{
-  display:flex;gap:16px;justify-content:center;align-items:center;
+  display:flex;
+  gap:16px;
+  justify-content:center;
+  align-items:center;
+}
+.logos .logo{
+  width:calc((100% - 16px)/2);
+  max-width:calc((100% - 16px)/2);
+  height:100px;
+  object-fit:contain;
+  flex:0 0 calc((100% - 16px)/2);
 }
 .logo{
-  width:46%;height:100px;object-fit:contain;display:block;
+  width:46%;
+  height:100px;
+  object-fit:contain;
+  display:block;
+  flex:0 0 46%;
+  max-width:46%;
 }
 .title{
   text-align:center;font-size:29px;font-weight:900;
@@ -206,8 +221,8 @@ button{cursor:pointer}
 <section id="home">
   <div class="hero">
     <div class="logos">
-      <img class="logo" src="electrochispas-logo.png?v=6" alt="ElectroChispas">
-      <img class="logo" src="chispas-sound-logo.png?v=6" alt="Chispas Sound">
+      <img class="logo" src="https://raw.githubusercontent.com/enrikluck-alt/control-fiscal/main/electrochispas-logo.png?v=8" alt="ElectroChispas">
+      <img class="logo" src="https://raw.githubusercontent.com/enrikluck-alt/control-fiscal/main/chispas-sound-logo.png?v=8" alt="Chispas Sound">
     </div>
     <div class="title">CONTROL FISCAL</div>
     <div class="tag">REGISTRA · CONTROLA · SIMPLIFICA</div>
