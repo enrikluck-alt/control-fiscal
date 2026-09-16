@@ -2,176 +2,106 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0b1015">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a1015">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Control Fiscal">
 <title>Control Fiscal</title>
 <style>
-:root{
- --bg:#080d12;--panel:#10171d;--panel2:#161f27;--line:#3d4b57;
- --yellow:#ffdf19;--purple:#df72ef;--white:#f7f8fa;--muted:#aeb7c0;
- --green:#43ee9b;--red:#ff4654;
-}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--white);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
-body{min-height:100vh}
-button,input,select{font:inherit}
-.app{width:100%;max-width:560px;min-height:100vh;margin:auto;background:linear-gradient(#0b1116,#0b1218);padding-bottom:86px}
-.top{padding:22px 18px 15px;text-align:center}
-.status{font-size:12px;color:#e9edf0;display:flex;justify-content:space-between;margin-bottom:8px}
-.brand{display:flex;justify-content:center;gap:34px;margin-top:2px}
-.brandItem{width:130px;text-align:center}
-.brandIcon{height:62px;display:flex;justify-content:center;align-items:center;font-size:42px;font-weight:900}
-.brandIcon.e{color:var(--yellow);text-shadow:0 0 16px #ffd90044}
-.brandIcon.s{color:var(--purple);text-shadow:0 0 16px #df72ef44}
-.brandName{font-size:12px;font-weight:900;letter-spacing:.7px}.brandSub{font-size:6px;letter-spacing:1.4px;color:var(--yellow);font-weight:800}.brandSub.p{color:var(--purple)}
-.title{font-size:29px;font-weight:900;letter-spacing:.4px;margin:17px 0 3px}.tag{font-size:9px;letter-spacing:2.2px;color:#aeb6bd}
-.page{padding:0 16px}
-.homeCards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-.homeCard{border:0;border-radius:13px;min-height:86px;padding:13px 10px;display:flex;align-items:center;text-align:left;cursor:pointer;color:#111}
-.homeCard.y{background:linear-gradient(135deg,#ffe92e,#ffdc12)}.homeCard.p{background:linear-gradient(135deg,#ee8bfa,#d86cea)}
-.homeCard.full{grid-column:1/-1;background:#f8f9fa;min-height:79px}
-.homeIcon{font-size:32px;width:55px;text-align:center}.homeText{flex:1}.homeText b{display:block;font-size:16px}.homeText span{display:block;font-size:10px;margin-top:4px;color:#30343a}.arrow{font-size:28px}
-.sectionHead{display:flex;justify-content:space-between;align-items:center;margin:17px 2px 8px}.sectionHead h3{font-size:14px;margin:0}.outline{border:1px solid #47535e;background:transparent;color:#fff;border-radius:10px;padding:7px 10px;font-size:11px}
-.records{background:#f7f8fa;color:#111;border-radius:13px;overflow:hidden}
-.record{display:flex;align-items:center;gap:8px;padding:9px;border-bottom:1px solid #e0e3e6}.record:last-child{border-bottom:0}
-.rIcon{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-size:18px}.rIcon.y{background:#ffe42a}.rIcon.p{background:#e784f3}
-.rBody{flex:1;min-width:0}.rTitle{font-size:12px;font-weight:800}.rDesc{font-size:10px;color:#505861;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rDate{font-size:8px;color:#777f87}.rAmount{font-size:12px;font-weight:900;white-space:nowrap}.rArrow{color:#68717a;font-size:18px}
-.info{margin-top:10px;background:#1c252d;border:1px solid #303c46;border-radius:13px;padding:11px;color:#d9dee2;display:flex;align-items:center;gap:12px}.infoIcon{font-size:25px}.infoText{font-size:9px;color:#c1c8ce;flex:1}.infoText b{display:block;color:#fff;font-size:11px;margin-bottom:4px}.infoBrand{text-align:right;font-size:7px;letter-spacing:1px;color:#aeb6bd;font-weight:800}
-.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(560px,100%);height:74px;background:#0c1217;border-top:1px solid #28323a;display:grid;grid-template-columns:repeat(4,1fr);z-index:50;padding-bottom:env(safe-area-inset-bottom)}
-.bottom button{border:0;background:transparent;color:#aeb7bf;font-size:9px;font-weight:700}.bottom span{display:block;font-size:23px;line-height:25px;margin-bottom:2px}.bottom .activeY{color:var(--yellow)}.bottom .activeP{color:var(--purple)}
-
-.header{padding:22px 16px 14px;display:flex;align-items:center;gap:10px}.back{background:none;border:0;color:#fff;font-size:30px;padding:0}.headerIcon{font-size:28px}.header h2{font-size:21px;margin:0}.header p{font-size:10px;color:#adb6bf;margin:4px 0 0}
-.form{padding:0 16px}.field{margin-bottom:13px}.field label{display:block;font-size:12px;font-weight:800;margin:0 0 6px}.input,.select{width:100%;height:45px;background:#111a21;color:#e9edf0;border:1px solid #53616d;border-radius:10px;padding:0 12px;font-size:14px;outline:none}.input::placeholder{color:#9da7b0}
-.two{display:grid;grid-template-columns:1fr 104px;gap:9px}
-.calc{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin:5px 0 14px}.calcBox{border:1px solid #3c4b57;border-radius:10px;padding:9px;background:#111920}.calcBox small{font-size:8px;color:#aeb7c0}.calcBox strong{display:block;font-size:15px;margin-top:5px}.calcBox.yellow{background:#ffe324;color:#111;border-color:#ffe324}.calcBox.purple{background:#e276ef;color:#111;border-color:#e276ef}
-.save{width:100%;height:48px;border:0;border-radius:10px;font-weight:900;font-size:13px;cursor:pointer}.save.y{background:var(--yellow);color:#111}.save.p{background:var(--purple);color:#111}
-.msg{text-align:center;font-size:12px;min-height:18px;margin-top:9px}.ok{color:var(--green)}.err{color:#ff727d}
-
-.summaryGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sumCard{border-radius:11px;padding:12px;color:#111}.sumCard.y{background:var(--yellow)}.sumCard.p{background:var(--purple)}.sumCard small{font-size:9px}.sumCard b{display:block;font-size:18px;margin-top:5px}
-.ivaPanel{margin-top:10px;border:1px solid #394751;border-radius:12px;padding:12px;background:#111a21}.ivaRow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2c3942;font-size:11px}.ivaRow:last-child{border-bottom:0}.ivaRow strong{font-size:14px}.green{color:var(--green)}.red{color:#ff6670}
-.countGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.count{border:1px solid #394751;border-radius:11px;padding:11px}.count small{font-size:8px;color:#aab3bb}.count b{display:block;font-size:18px;margin-top:4px}
-.search{display:flex;gap:8px;margin:4px 0 10px}.search input{flex:1;height:40px}.filter{width:43px;border:1px solid #46545f;border-radius:10px;background:#111a21;color:#fff}
-.toast{position:fixed;left:50%;bottom:94px;transform:translateX(-50%);width:min(360px,calc(100% - 32px));background:#101920;border:1px solid #3d505c;border-radius:16px;padding:20px;text-align:center;box-shadow:0 18px 50px #0009;z-index:100}.check{font-size:53px;color:var(--green);line-height:1;margin-bottom:8px}.toast h3{margin:0 0 6px}.toast p{font-size:11px;color:#b8c0c7}.toast button{width:100%;height:42px;border:0;border-radius:10px;font-weight:900}.toast.y button{background:var(--yellow)}.toast.p button{background:var(--purple)}
-.hidden{display:none!important}
-@media(max-width:380px){.title{font-size:25px}.brand{gap:15px}.brandItem{width:125px}.homeText b{font-size:14px}}
+:root{--bg:#080d12;--panel:#111920;--line:#40505c;--y:#ffdf18;--p:#df72ef;--muted:#aeb8c0;--green:#49efa0;--red:#ff5c67}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:#fff;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+button,input,select{font:inherit}.app{max-width:560px;margin:auto;min-height:100vh;background:linear-gradient(#0b1116,#0b1218);padding-bottom:78px}
+.hero{padding:16px 15px 14px;background:#0b1116}.brands{display:flex;justify-content:center;gap:22px}.brand{width:46%;text-align:center}.brand img{width:100%;height:92px;object-fit:contain;mix-blend-mode:screen}.title{text-align:center;font-size:29px;font-weight:900;margin-top:2px}.tag{text-align:center;color:#b8c0c7;font-size:9px;letter-spacing:2px;margin-top:3px}
+.page{padding:10px 15px}.homegrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.home{border:0;border-radius:13px;min-height:88px;padding:12px 9px;display:flex;align-items:center;text-align:left;color:#111;cursor:pointer}.yellow{background:linear-gradient(135deg,#ffe932,#ffdb14)}.purple{background:linear-gradient(135deg,#ee8cf8,#d76ae9)}.white{background:#f8f9fa}.home.full{grid-column:1/-1;min-height:78px}.homeicon{width:50px;font-size:32px;text-align:center}.htext{flex:1}.htext b{display:block;font-size:16px}.htext span{display:block;font-size:9px;margin-top:4px}.arrow{font-size:28px}
+.headrow{display:flex;align-items:center;justify-content:space-between;margin:16px 2px 8px}.headrow h3{margin:0;font-size:14px}.outline{background:transparent;color:#fff;border:1px solid #495661;border-radius:10px;padding:7px 10px;font-size:10px}.records{background:#f7f8fa;color:#111;border-radius:12px;overflow:hidden}.record{display:flex;align-items:center;gap:8px;padding:9px;border-bottom:1px solid #e1e4e7}.record:last-child{border:0}.ricon{width:31px;height:31px;border-radius:9px;display:grid;place-items:center;font-size:17px}.ricon.y{background:#ffe42a}.ricon.p{background:#e681f2}.rbody{flex:1;min-width:0}.rtitle{font-size:12px;font-weight:800}.rdesc{font-size:10px;color:#525b64;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rdate{font-size:8px;color:#777}.ramount{font-size:12px;font-weight:900;white-space:nowrap}.rarrow{font-size:18px;color:#68717a}.info{display:flex;align-items:center;gap:10px;background:#1a232b;border:1px solid #303d47;border-radius:12px;margin-top:9px;padding:10px}.info b{display:block;font-size:10px}.info span{font-size:8px;color:#bdc5cc}.ib{flex:1}.ibrand{text-align:right;font-size:7px;letter-spacing:1px;color:#aeb7bf;font-weight:800}
+.bottom{position:fixed;z-index:20;bottom:0;left:50%;transform:translateX(-50%);width:min(560px,100%);height:74px;background:#0c1217;border-top:1px solid #29343d;display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:env(safe-area-inset-bottom)}.bottom button{border:0;background:none;color:#aeb7bf;font-size:9px;font-weight:700}.bottom span{display:block;font-size:22px;line-height:25px}.bottom .ay{color:var(--y)}.bottom .ap{color:var(--p)}
+.header{display:flex;align-items:center;gap:10px;padding:19px 15px 12px}.back{border:0;background:none;color:#fff;font-size:31px;padding:0}.headicon{font-size:28px}.header h2{margin:0;font-size:21px}.header p{margin:4px 0 0;color:#adb7bf;font-size:10px}.form{padding:0 15px}.field{margin-bottom:13px}.field label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}.input,.select{width:100%;height:45px;background:#111a21;color:#eef1f3;border:1px solid #53616d;border-radius:10px;padding:0 12px;font-size:14px}.input::placeholder{color:#9da7b0}.two{display:grid;grid-template-columns:1fr 104px;gap:9px}.calc{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin:4px 0 14px}.box{background:#111920;border:1px solid #3b4b57;border-radius:10px;padding:9px}.box small{font-size:8px;color:#adb7bf}.box strong{display:block;font-size:15px;margin-top:5px}.box.y{background:var(--y);border-color:var(--y);color:#111}.box.p{background:var(--p);border-color:var(--p);color:#111}.save{width:100%;height:48px;border:0;border-radius:10px;font-size:13px;font-weight:900}.save.y{background:var(--y)}.save.p{background:var(--p)}.msg{text-align:center;min-height:18px;font-size:12px;margin-top:8px}.ok{color:var(--green)}.err{color:#ff717a}
+.sumgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sum{padding:12px;border-radius:11px;color:#111}.sum.y{background:var(--y)}.sum.p{background:var(--p)}.sum small{font-size:9px}.sum b{display:block;font-size:18px;margin-top:5px}.ivapanel{margin-top:9px;background:#111a21;border:1px solid #3b4b57;border-radius:12px;padding:11px}.ivarow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2c3942;font-size:11px}.ivarow:last-child{border:0}.ivarow strong{font-size:14px}.green{color:var(--green)}.red{color:var(--red)}.counts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.count{border:1px solid #3b4b57;border-radius:11px;padding:11px}.count small{font-size:8px;color:#aeb7bf}.count b{display:block;font-size:18px;margin-top:4px}.search{display:flex;gap:7px;margin-bottom:9px}.search input{flex:1}.filter{width:42px;border:1px solid #46545f;border-radius:10px;background:#111a21;color:#fff}
+.toast{position:fixed;z-index:100;left:50%;bottom:92px;transform:translateX(-50%);width:min(350px,calc(100% - 30px));background:#101920;border:1px solid #40515d;border-radius:16px;padding:19px;text-align:center;box-shadow:0 18px 50px #0009}.check{font-size:52px;color:var(--green);line-height:1}.toast h3{margin:6px 0}.toast p{font-size:11px;color:#b9c1c8}.toast button{width:100%;height:42px;border:0;border-radius:10px;font-weight:900}.toast.y button{background:var(--y)}.toast.p button{background:var(--p)}.hidden{display:none!important}
 </style>
 </head>
 <body>
 <div class="app">
-
 <section id="home">
- <div class="top">
-  <div class="status"><span>9:41</span><span>▮▮▮　◉　▰</span></div>
-  <div class="brand">
-   <div class="brandItem"><div class="brandIcon e">⚡</div><div class="brandName">ELECTROCHISPAS</div><div class="brandSub">ELECTRONIC TECHNICIAN</div></div>
-   <div class="brandItem"><div class="brandIcon s">♫</div><div class="brandName">CHISPAS SOUND</div><div class="brandSub p">SOUND AND LIGHTING</div></div>
-  </div>
+ <div class="hero">
+  <div class="brands"><div class="brand"><img src="electrochispas-logo.jpg" alt="ElectroChispas"></div><div class="brand"><img src="chispas-sound-logo.jpg" alt="Chispas Sound"></div></div>
   <div class="title">CONTROL FISCAL</div><div class="tag">REGISTRA · CONTROLA · SIMPLIFICA</div>
  </div>
  <div class="page">
-  <div class="homeCards">
-   <button class="homeCard y" onclick="openForm('Compra')"><div class="homeIcon">🛒</div><div class="homeText"><b>COMPRAS</b><span>REGISTRA TUS GASTOS</span></div><div class="arrow">›</div></button>
-   <button class="homeCard p" onclick="openForm('Facturado')"><div class="homeIcon">▣</div><div class="homeText"><b>FACTURACIÓN</b><span>REGISTRA TUS INGRESOS</span></div><div class="arrow">›</div></button>
-   <button class="homeCard full" onclick="openSummary()"><div class="homeIcon">▮▮▮</div><div class="homeText"><b>RESUMEN</b><span>VISUALIZA TUS TOTALES Y EL IVA</span></div><div class="arrow">›</div></button>
+  <div class="homegrid">
+   <button class="home yellow" onclick="openForm('Compra')"><div class="homeicon">🛒</div><div class="htext"><b>COMPRAS</b><span>REGISTRA TUS GASTOS</span></div><div class="arrow">›</div></button>
+   <button class="home purple" onclick="openForm('Facturado')"><div class="homeicon">▣</div><div class="htext"><b>FACTURACIÓN</b><span>REGISTRA TUS INGRESOS</span></div><div class="arrow">›</div></button>
+   <button class="home full white" onclick="openSummary()"><div class="homeicon">▮▮▮</div><div class="htext"><b>RESUMEN</b><span>VISUALIZA TUS TOTALES Y EL IVA</span></div><div class="arrow">›</div></button>
   </div>
-  <div class="sectionHead"><h3>ÚLTIMOS REGISTROS</h3><button class="outline" onclick="openRecords()">Ver todos　›</button></div>
+  <div class="headrow"><h3>ÚLTIMOS REGISTROS</h3><button class="outline" onclick="openRecords()">Ver todos　›</button></div>
   <div id="latest" class="records"></div>
-  <div class="info"><div class="infoIcon">▮▮▮</div><div class="infoText"><b>Pequeños registros, grandes decisiones.</b>Controla hoy, crece mañana.</div><div class="infoBrand">ELECTROCHISPAS<br>&<br>CHISPAS SOUND</div></div>
+  <div class="info"><div style="font-size:24px">▮▮▮</div><div class="ib"><b>Pequeños registros, grandes decisiones.</b><span>Controla hoy, crece mañana.</span></div><div class="ibrand">ELECTROCHISPAS<br>&<br>CHISPAS SOUND</div></div>
  </div>
 </section>
 
-<section id="formPage" class="hidden">
- <div id="formHeader" class="header"></div><div id="formBody"></div>
-</section>
+<section id="formPage" class="hidden"><div id="formHeader" class="header"></div><div id="formBody"></div></section>
 
 <section id="summaryPage" class="hidden">
- <div class="header"><button class="back" onclick="goHome()">‹</button><div><h2>▮▮ RESUMEN</h2><p>Consulta tus totales y el estado del IVA</p></div></div>
+ <div class="header"><button class="back" onclick="goHome()">‹</button><div class="headicon">▮▮</div><div><h2>RESUMEN</h2><p>Consulta tus totales y el estado del IVA</p></div></div>
  <div class="page">
   <div class="field"><select class="select"><option>Todo el año 2026</option><option>Septiembre 2026</option><option>Agosto 2026</option></select></div>
-  <div class="summaryGrid"><div class="sumCard y"><small>Total Compras</small><b id="sc">0,00 €</b></div><div class="sumCard p"><small>Total Facturación</small><b id="sf">0,00 €</b></div></div>
-  <div class="ivaPanel">
-   <div class="ivaRow"><span>↓　IVA Soportado (Compras)</span><strong class="green" id="sis">0,00 €</strong></div>
-   <div class="ivaRow"><span>↑　IVA Repercutido (Facturación)</span><strong class="red" id="sir">0,00 €</strong></div>
-   <div class="ivaRow"><span>Resultado IVA</span><strong id="res">0,00 €</strong></div>
-  </div>
-  <div class="countGrid"><div class="count"><small>🛒 Número de Compras</small><b id="nc">0</b></div><div class="count"><small>▣ Número de Facturas</small><b id="nf">0</b></div></div>
-  <div class="info"><div class="infoIcon">▮▮▮</div><div class="infoText"><b>Pequeños registros, grandes decisiones.</b>Controla hoy, crece mañana.</div></div>
+  <div class="sumgrid"><div class="sum y"><small>Total Compras</small><b id="sc">0,00 €</b></div><div class="sum p"><small>Total Facturación</small><b id="sf">0,00 €</b></div></div>
+  <div class="ivapanel"><div class="ivarow"><span class="green">↓　IVA Soportado (Compras)</span><strong id="sis">0,00 €</strong></div><div class="ivarow"><span class="red">↑　IVA Repercutido (Facturación)</span><strong id="sir">0,00 €</strong></div><div class="ivarow"><span>Resultado IVA</span><strong id="res">0,00 €</strong></div></div>
+  <div class="counts"><div class="count"><small>🛒 Número de Compras</small><b id="nc">0</b></div><div class="count"><small>▣ Número de Facturas</small><b id="nf">0</b></div></div>
+  <div class="info"><div style="font-size:24px">▮▮▮</div><div class="ib"><b>Pequeños registros, grandes decisiones.</b><span>Controla hoy, crece mañana.</span></div></div>
  </div>
 </section>
 
 <section id="recordsPage" class="hidden">
- <div class="header"><button class="back" onclick="goHome()">‹</button><div><h2 id="recordsTitle">REGISTROS</h2><p>Todos tus movimientos</p></div></div>
- <div class="page"><div class="search"><input class="input" id="search" placeholder="⌕  Buscar..." oninput="renderAll()"><button class="filter">≡</button></div><div id="all" class="records"></div></div>
+ <div class="header"><button class="back" onclick="goHome()">‹</button><div><h2>REGISTROS</h2><p>Todos tus movimientos</p></div></div>
+ <div class="page"><div class="search"><input id="search" class="input" placeholder="⌕  Buscar..." oninput="renderAll()"><button class="filter">≡</button></div><div id="all" class="records"></div></div>
 </section>
 
-<nav class="bottom">
- <button id="nHome" class="activeY" onclick="goHome()"><span>⌂</span>Inicio</button>
- <button id="nBuy" onclick="openForm('Compra')"><span>🛒</span>Compras</button>
- <button id="nSale" onclick="openForm('Facturado')"><span>▣</span>Facturación</button>
- <button id="nSum" onclick="openSummary()"><span>▮▮</span>Resumen</button>
-</nav>
+<nav class="bottom"><button id="nh" class="ay" onclick="goHome()"><span>⌂</span>Inicio</button><button id="nb" onclick="openForm('Compra')"><span>🛒</span>Compras</button><button id="ns" onclick="openForm('Facturado')"><span>▣</span>Facturación</button><button id="nr" onclick="openSummary()"><span>▮▮</span>Resumen</button></nav>
 </div>
 
 <script>
 const SCRIPT_URL="https://script.google.com/macros/s/AKfycbz-a5yGCnOTGKhy0iDIIsqPN2nYAptaizOoHKuByZXoOXemEm7_q5-ToEDFYv3Ms7jsbA/exec";
 let records=JSON.parse(localStorage.getItem("cf_records")||"[]");
-
 const euro=n=>new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR"}).format(Number(n)||0);
 const esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
 const dateText=d=>new Date(d).toLocaleDateString("es-ES");
-function calc(total,iva){total=Number(total)||0;iva=Number(iva)||0;const base=iva?total/(1+iva/100):total;return{total,base,ivaValue:total-base}}
-function setNav(which){document.querySelectorAll(".bottom button").forEach(b=>b.classList.remove("activeY","activeP"));if(which==="home")nHome.classList.add("activeY");if(which==="buy")nBuy.classList.add("activeY");if(which==="sale")nSale.classList.add("activeP");if(which==="sum")nSum.classList.add("activeY")}
+function calc(t,i){t=Number(t)||0;i=Number(i)||0;let b=i?t/(1+i/100):t;return{total:t,base:b,iva:t-b}}
+function nav(x){document.querySelectorAll(".bottom button").forEach(b=>b.classList.remove("ay","ap"));if(x==="home")nh.classList.add("ay");if(x==="buy")nb.classList.add("ay");if(x==="sale")ns.classList.add("ap");if(x==="sum")nr.classList.add("ay")}
 function only(id){["home","formPage","summaryPage","recordsPage"].forEach(x=>document.getElementById(x).classList.toggle("hidden",x!==id))}
-function goHome(){only("home");setNav("home");renderLatest()}
+function goHome(){only("home");nav("home");renderLatest()}
 function openForm(tipo){
- only("formPage");setNav(tipo==="Compra"?"buy":"sale");
- const compra=tipo==="Compra";
- formHeader.innerHTML=`<button class="back" onclick="goHome()">‹</button><div class="headerIcon">${compra?"🛒":"▣"}</div><div><h2>${compra?"COMPRAS":"FACTURACIÓN"}</h2><p>${compra?"Registra tus gastos de forma rápida":"Registra tus ingresos de forma rápida"}</p></div>`;
+ only("formPage");nav(tipo==="Compra"?"buy":"sale");let c=tipo==="Compra";
+ formHeader.innerHTML=`<button class="back" onclick="goHome()">‹</button><div class="headicon">${c?"🛒":"▣"}</div><div><h2>${c?"COMPRAS":"FACTURACIÓN"}</h2><p>${c?"Registra tus gastos de forma rápida":"Registra tus ingresos de forma rápida"}</p></div>`;
  formBody.innerHTML=`<div class="form">
- <div class="field"><label>${compra?"Tienda / Proveedor":"Cliente"}</label><input id="tercero" class="input" placeholder="${compra?"Ej. Leroy Merlin":"Ej. Ayuntamiento, empresa, particular"}"></div>
- <div class="field"><label>Concepto</label><input id="concepto" class="input" placeholder="${compra?"Ej. Cable DMX, estructura, etc.":"Ej. Sonido e iluminación, pantalla LED, etc."}"></div>
- <div class="two"><div class="field"><label>Importe total</label><input id="total" class="input" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00" oninput="recalc(${compra})"></div>
- <div class="field"><label>IVA %</label><select id="iva" class="select" onchange="recalc(${compra})"><option value="21">21%</option><option value="10">10%</option><option value="4">4%</option><option value="0">0%</option></select></div></div>
- <div class="calc"><div class="calcBox"><small>Base imponible</small><strong id="base">0,00 €</strong></div><div class="calcBox"><small>IVA ${compra?"soportado":"repercutido"}</small><strong id="ivaValue">0,00 €</strong></div><div class="calcBox ${compra?"yellow":"purple"}"><small>Total</small><strong id="totalValue">0,00 €</strong></div></div>
- <button class="save ${compra?"y":"p"}" id="saveBtn" onclick="send('${tipo}')">${compra?"🛒　GUARDAR COMPRA":"▣　GUARDAR FACTURA"}</button><div id="msg" class="msg"></div></div>`;
+ <div class="field"><label>${c?"Tienda / Proveedor":"Cliente"}</label><input id="tercero" class="input" placeholder="${c?"Ej. Leroy Merlin":"Ej. Ayuntamiento, empresa, particular"}"></div>
+ <div class="field"><label>Concepto</label><input id="concepto" class="input" placeholder="${c?"Ej. Cable DMX, estructura, etc.":"Ej. Sonido e iluminación, pantalla LED, etc."}"></div>
+ <div class="two"><div class="field"><label>Importe total</label><input id="total" class="input" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00" oninput="recalc()"></div><div class="field"><label>IVA %</label><select id="iva" class="select" onchange="recalc()"><option value="21">21%</option><option value="10">10%</option><option value="4">4%</option><option value="0">0%</option></select></div></div>
+ <div class="calc"><div class="box"><small>Base imponible</small><strong id="base">0,00 €</strong></div><div class="box"><small>IVA ${c?"soportado":"repercutido"}</small><strong id="ivaValue">0,00 €</strong></div><div class="box ${c?"y":"p"}"><small>Total</small><strong id="totalValue">0,00 €</strong></div></div>
+ <button id="saveBtn" class="save ${c?"y":"p"}" onclick="sendRecord('${tipo}')">${c?"🛒　GUARDAR COMPRA":"▣　GUARDAR FACTURA"}</button><div id="msg" class="msg"></div></div>`;
 }
-function recalc(){const c=calc(total.value,iva.value);base.textContent=euro(c.base);ivaValue.textContent=euro(c.ivaValue);totalValue.textContent=euro(c.total)}
-async function send(tipo){
- const terceroEl=document.getElementById("tercero"),conceptoEl=document.getElementById("concepto"),totalEl=document.getElementById("total"),ivaEl=document.getElementById("iva");
- const tercero=terceroEl.value.trim(),concepto=conceptoEl.value.trim(),totalN=Number(totalEl.value),ivaN=Number(ivaEl.value),m=document.getElementById("msg"),b=document.getElementById("saveBtn");
- if(!tercero||!concepto||!totalN||totalN<=0){m.className="msg err";m.textContent="Completa todos los campos.";return}
- const c=calc(totalN,ivaN),now=new Date();
- const payload={tipo,tercero,concepto,base:Number(c.base.toFixed(2)),ivaPorcentaje:ivaN,iva:Number(c.ivaValue.toFixed(2)),total:Number(c.total.toFixed(2))};
- b.disabled=true;m.textContent="Enviando...";
+function recalc(){if(!document.getElementById("total"))return;let c=calc(total.value,iva.value);base.textContent=euro(c.base);ivaValue.textContent=euro(c.iva);totalValue.textContent=euro(c.total)}
+async function sendRecord(tipo){
+ const tercero=document.getElementById("tercero").value.trim(),concepto=document.getElementById("concepto").value.trim(),t=Number(document.getElementById("total").value),i=Number(document.getElementById("iva").value),m=document.getElementById("msg"),b=document.getElementById("saveBtn");
+ if(!tercero||!concepto||!t||t<=0){m.className="msg err";m.textContent="Completa todos los campos.";return}
+ const c=calc(t,i),payload={tipo,tercero,concepto,base:Number(c.base.toFixed(2)),ivaPorcentaje:i,iva:Number(c.iva.toFixed(2)),total:Number(t.toFixed(2))};
+ b.disabled=true;m.textContent="Guardando en Google Sheets...";
  try{
-  await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
-  const local={...payload,fecha:now.toISOString()};records.unshift(local);localStorage.setItem("cf_records",JSON.stringify(records.slice(0,200)));
-  showToast(tipo);
-  terceroEl.value="";conceptoEl.value="";totalEl.value="";recalc();
- }catch(e){m.className="msg err";m.textContent="No se pudo enviar. Comprueba la conexión."}
+   await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+   const local={...payload,fecha:new Date().toISOString()};
+   records.unshift(local);records=records.slice(0,200);localStorage.setItem("cf_records",JSON.stringify(records));
+   m.className="msg ok";m.textContent="Guardado correctamente ✓";
+   setTimeout(()=>showToast(tipo),250);
+ }catch(e){m.className="msg err";m.textContent="Error de conexión. No se ha confirmado el envío."}
  finally{b.disabled=false}
 }
-function toastClose(){document.getElementById("toast")?.remove()}
-function showToast(tipo){
- const p=tipo==="Compra";
- const div=document.createElement("div");div.id="toast";div.className="toast "+(p?"y":"p");
- div.innerHTML=`<div class="check">✓</div><h3>¡${p?"Compra":"Factura"} registrada!</h3><p>Se ha guardado correctamente.</p><button onclick="toastClose()">Aceptar</button>`;
- document.body.appendChild(div);
-}
-function recordHTML(r){return `<div class="record"><div class="rIcon ${r.tipo==="Compra"?"y":"p"}">${r.tipo==="Compra"?"🛒":"▣"}</div><div class="rBody"><div class="rTitle">${r.tipo==="Compra"?"Compra":"Factura"}</div><div class="rDesc">${esc(r.tercero)} - ${esc(r.concepto)}</div><div class="rDate">${dateText(r.fecha)}</div></div><div class="rAmount">${euro(r.total)}</div><div class="rArrow">›</div></div>`}
-function renderLatest(){latest.innerHTML=records.length?records.slice(0,4).map(recordHTML).join(""):`<div style="padding:22px;text-align:center;color:#666">Todavía no hay registros</div>`}
-function openRecords(){only("recordsPage");setNav("home");renderAll()}
-function renderAll(){const q=(search.value||"").toLowerCase();const a=records.filter(r=>(r.tercero+" "+r.concepto+" "+r.tipo).toLowerCase().includes(q));all.innerHTML=a.length?a.map(recordHTML).join(""):`<div style="padding:22px;text-align:center;color:#adb7bf">No hay registros</div>`}
-function openSummary(){
- only("summaryPage");setNav("sum");
- let c=0,f=0,ivs=0,ivr=0,nc=0,nf=0;
- records.forEach(r=>{if(r.tipo==="Compra"){c+=+r.total;ivs+=+r.iva;nc++}else{f+=+r.total;ivr+=+r.iva;nf++}});
- sc.textContent=euro(c);sf.textContent=euro(f);sis.textContent=euro(ivs);sir.textContent=euro(ivr);res.textContent=euro(ivr-ivs);ncEl.textContent=nc;nfEl.textContent=nf;
-}
-const ncEl=document.getElementById("nc"),nfEl=document.getElementById("nf");
+function showToast(tipo){const p=tipo==="Compra",d=document.createElement("div");d.id="toast";d.className="toast "+(p?"y":"p");d.innerHTML=`<div class="check">✓</div><h3>¡${p?"Compra":"Factura"} registrada!</h3><p>El registro se ha enviado a Google Sheets.</p><button onclick="document.getElementById('toast').remove()">Aceptar</button>`;document.body.appendChild(d)}
+function row(r){return`<div class="record"><div class="ricon ${r.tipo==="Compra"?"y":"p"}">${r.tipo==="Compra"?"🛒":"▣"}</div><div class="rbody"><div class="rtitle">${r.tipo==="Compra"?"Compra":"Factura"}</div><div class="rdesc">${esc(r.tercero)} - ${esc(r.concepto)}</div><div class="rdate">${dateText(r.fecha)}</div></div><div class="ramount">${euro(r.total)}</div><div class="rarrow">›</div></div>`}
+function renderLatest(){latest.innerHTML=records.length?records.slice(0,4).map(row).join(""):`<div style="padding:22px;text-align:center;color:#66717b">Todavía no hay registros</div>`}
+function openRecords(){only("recordsPage");renderAll()}
+function renderAll(){let q=(search.value||"").toLowerCase();let a=records.filter(r=>(r.tercero+" "+r.concepto+" "+r.tipo).toLowerCase().includes(q));all.innerHTML=a.length?a.map(row).join(""):`<div style="padding:22px;text-align:center;color:#aeb7bf">No hay registros</div>`}
+function openSummary(){only("summaryPage");nav("sum");let c=0,f=0,ivs=0,ivr=0,nc=0,nf=0;records.forEach(r=>{if(r.tipo==="Compra"){c+=+r.total;ivs+=+r.iva;nc++}else{f+=+r.total;ivr+=+r.iva;nf++}});sc.textContent=euro(c);sf.textContent=euro(f);sis.textContent=euro(ivs);sir.textContent=euro(ivr);res.textContent=euro(ivr-ivs);document.getElementById("nc").textContent=nc;document.getElementById("nf").textContent=nf)}
 renderLatest();
 </script>
 </body>
