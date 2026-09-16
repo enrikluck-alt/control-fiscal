@@ -839,6 +839,7 @@ function openRecord(fila,tipo){
 
 function openRecordData(r){
   editingRecord=r;
+  const tipo=r.tipo;
   $("modalTitle").textContent=tipo==="Compra"?"Editar compra":"Editar factura";
   $("modalThirdLabel").textContent=tipo==="Compra"?"Tienda / Proveedor":"Cliente";
   $("modalAmountLabel").textContent=tipo==="Compra"?"Importe total (IVA incluido)":"Base imponible (sin IVA)";
