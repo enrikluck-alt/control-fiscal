@@ -416,6 +416,12 @@ button{cursor:pointer}
 .articleOpen{grid-column:1/-1;justify-self:start;color:var(--yellow);text-decoration:none;font-size:10px;font-weight:900}
 @media(max-width:520px){.articleResult.onlineResult{grid-template-columns:1fr}.onlineResult .articlePrice{justify-self:start}.articleOpen{grid-column:auto}}
 
+
+.articleSearchDirect{margin-top:14px;display:grid;gap:12px;padding:18px;border:1px solid var(--border,#ddd);border-radius:14px;background:var(--card,#fff)}
+.articleSearchDirect b{font-size:16px}
+.articleSearchDirect p{margin:5px 0 0;opacity:.72;line-height:1.4}
+.articleDirectIcon{font-size:30px}
+
 </style>
 
 <style id="iva-result-styles">
@@ -784,8 +790,8 @@ document.querySelector("#securityLock .securityBox")?.addEventListener("click", 
   <div class="page">
     <div class="articleSearchBox">
       <div class="field"><label>¿QUÉ ARTÍCULO BUSCAS?</label><input id="articleSearchInput" class="input" placeholder="Ej. DAS Vantec 215, cable DMX 10 m..." autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();searchOnlineArticles();}"></div>
-      <button class="save p" type="button" onclick="searchOnlineArticles()">🔎 BUSCAR EN INTERNET</button>
-      <div class="articleSearchHint">Consulta Google Shopping en España y ordena los resultados por precio. Los resultados son los disponibles en el momento de la búsqueda.</div>
+      <button class="save p" type="button" onclick="searchOnlineArticles()">🔎 ABRIR GOOGLE SHOPPING</button>
+      <div class="articleSearchHint">Abre directamente Google Shopping en España para comparar precios actuales de distintas tiendas online. Sin API y sin esperas del servidor.</div>
     </div>
     <div id="articleSearchResults" class="articleResults"></div>
   </div>
@@ -976,15 +982,7 @@ document.querySelector("#securityLock .securityBox")?.addEventListener("click", 
         </button>
       </div>
 
-      <div class="settingsGroup">
-        <div class="settingsTitle">🔎 COMPARADOR DE PRECIOS ONLINE</div>
-        <div class="settingsHint">Configura la API de SerpApi para consultar precios actuales de Google Shopping. La clave se guarda en el proyecto de Apps Script y no en el navegador.</div>
-        <button class="guideBtn" type="button" onclick="openShoppingSettings()">
-          <span class="guideIcon">🔎</span>
-          <span>CONFIGURAR BUSCADOR ONLINE</span>
-        </button>
-        <div id="shoppingConfigStatus" class="settingsHint" style="margin-top:8px">Comprobando configuración...</div>
-      </div>
+      
 
       <div class="settingsGroup">
         <div class="settingsTitle">ℹ️ INFORMACIÓN</div>
@@ -1220,7 +1218,6 @@ function openSettings(){
   renderSupplierPanel();
   loadSuppliersFromGoogle(false);
   loadInvoiceSettings(false);
-  loadShoppingConfigStatus();
 }
 
 function saveSetting(key,value){
@@ -1588,78 +1585,24 @@ function openArticleSearch(){
   const input=$("articleSearchInput");
   if(input){ input.value=''; setTimeout(()=>input.focus(),50); }
   const out=$("articleSearchResults");
-  if(out) out.innerHTML='<div class="articleEmpty">Escribe el producto y pulsa "BUSCAR EN INTERNET".</div>';
+  if(out) out.innerHTML='<div class="articleEmpty">Escribe el producto y pulsa "ABRIR GOOGLE SHOPPING".</div>';
 }
 
-async function searchOnlineArticles(){
+function searchOnlineArticles(){
   const q=$("articleSearchInput")?.value.trim()||"";
   const out=$("articleSearchResults");
   if(!out) return;
-  if(q.length<2){ out.innerHTML='<div class="articleEmpty">Escribe al menos 2 caracteres.</div>'; return; }
-  out.innerHTML='<div class="articleEmpty">Buscando precios en Internet...</div>';
-  try{
-    const data=await callAction({accion:'buscarPreciosInternet',q});
-    const rows=Array.isArray(data.resultados)?data.resultados:[];
-    if(!rows.length){ out.innerHTML='<div class="articleEmpty">No se encontraron ofertas online para esa búsqueda.</div>'; return; }
-    out.innerHTML=rows.map((r,i)=>{
-      const delivery=r.delivery?`<small>🚚 ${esc(r.delivery)}</small>`:'';
-      const rating=r.rating?`<small>⭐ ${esc(String(r.rating))}${r.reviews?` (${esc(String(r.reviews))})`:''}</small>`:'';
-      return `<div class="articleResult onlineResult">
-        <div class="articleStore"><b>${esc(r.source||'Tienda online')}</b><strong>${esc(r.title||'Producto')}</strong>${delivery}${rating}</div>
-        ${i===0?'<span class="articleBadge">MÁS BARATO</span>':''}
-        <div class="articlePrice">${esc(r.price||'—')}</div>
-        ${r.link?`<a class="articleOpen" href="${esc(r.link)}" target="_blank" rel="noopener noreferrer">VER OFERTA ↗</a>`:''}
-      </div>`;
-    }).join('');
-  }catch(e){
-    out.innerHTML=`<div class="articleEmpty">${esc(e.message||'No se pudo consultar el comparador.')}</div>`;
+  if(q.length<2){
+    out.innerHTML='<div class="articleEmpty">Escribe al menos 2 caracteres.</div>';
+    return;
   }
-}
-
-async function loadShoppingConfigStatus(){
-  try{
-    const data=await callAction({accion:'obtenerConfigShopping'});
-    const el=$("shoppingConfigStatus");
-    if(el) el.textContent=data.configurada?'✅ Buscador online configurado.':'⚠️ Falta configurar la API de SerpApi.';
-  }catch(e){
-    const el=$("shoppingConfigStatus");
-    if(el) el.textContent='No se pudo comprobar la configuración.';
-  }
-}
-
-async function openShoppingSettings(){
-  const modal=$("shoppingSettingsModal");
-  if(!modal) return;
-  modal.classList.remove('hidden');
-  const msg=$("shoppingConfigMsg");
-  if(msg){msg.className='msg';msg.textContent='';}
-  const key=$("shoppingApiKey"); if(key) key.value='';
-  await loadShoppingConfigStatus();
-}
-function closeShoppingSettings(){ $("shoppingSettingsModal")?.classList.add('hidden'); }
-
-async function saveShoppingSettings(){
-  const key=$("shoppingApiKey")?.value.trim()||'';
-  const msg=$("shoppingConfigMsg");
-  if(!key){ if(msg){msg.className='msg err';msg.textContent='Pega una API key de SerpApi.';} return; }
-  if(msg){msg.className='msg';msg.textContent='Guardando...';}
-  try{
-    const data=await callAction({accion:'guardarConfigShopping',apiKey:key});
-    if(msg){msg.className='msg ok';msg.textContent=data.mensaje||'API key guardada ✓';}
-    const status=$("shoppingConfigStatus"); if(status) status.textContent='✅ Buscador online configurado.';
-    setTimeout(closeShoppingSettings,600);
-  }catch(e){ if(msg){msg.className='msg err';msg.textContent=e.message||'No se pudo guardar la API key.';} }
-}
-
-async function testShoppingApi(){
-  const q='DAS Vantec 215';
-  const msg=$("shoppingConfigMsg");
-  if(msg){msg.className='msg';msg.textContent='Probando conexión...';}
-  try{
-    const data=await callAction({accion:'buscarPreciosInternet',q});
-    const count=Array.isArray(data.resultados)?data.resultados.length:0;
-    if(msg){msg.className='msg ok';msg.textContent=`Conexión correcta. ${count} resultados recibidos ✓`;}
-  }catch(e){ if(msg){msg.className='msg err';msg.textContent=e.message||'No se pudo probar la conexión.';} }
+  const url='https://www.google.com/search?tbm=shop&hl=es&gl=es&q='+encodeURIComponent(q);
+  out.innerHTML=`<div class="articleSearchDirect">
+    <div class="articleDirectIcon">🔎</div>
+    <div><b>GOOGLE SHOPPING</b><p>Se abrirán los resultados de <strong>${esc(q)}</strong> en Google Shopping España.</p></div>
+    <button class="save p" type="button" onclick="window.location.href='${url.replace(/'/g, "%27")}'">ABRIR GOOGLE SHOPPING ↗</button>
+  </div>`;
+  window.location.href=url;
 }
 
 function openSimpleClientModal(){
@@ -2934,22 +2877,7 @@ securityStart();
 </script>
 
 
-<div id="shoppingSettingsModal" class="modal hidden" onclick="if(event.target===this)closeShoppingSettings()">
-  <div class="modalCard">
-    <button class="modalClose" type="button" onclick="closeShoppingSettings()">×</button>
-    <div class="modalTitle">🔎 Configurar buscador online</div>
-    <div class="field">
-      <label>CLAVE API DE SERPAPI</label>
-      <input id="shoppingApiKey" class="input" type="password" autocomplete="off" placeholder="Pega aquí tu API key de SerpApi">
-    </div>
-    <div class="settingsHint" style="margin-top:8px">La clave se guarda en Google Apps Script. No se muestra en la aplicación una vez guardada.</div>
-    <div id="shoppingConfigMsg" class="msg"></div>
-    <div class="modalActions">
-      <button class="save" type="button" onclick="testShoppingApi()">PROBAR CONEXIÓN</button>
-      <button class="save p" type="button" onclick="saveShoppingSettings()">GUARDAR API KEY</button>
-    </div>
-  </div>
-</div>
+
 
 <div id="clientSaveModal" class="modal hidden" onclick="if(event.target===this)closeSimpleClientModal()">
   <div class="modalCard">
