@@ -143,6 +143,18 @@ button{cursor:pointer}
 .articleSearchBox{background:#121a21;border:1px solid #303d47;border-radius:14px;padding:13px;margin-bottom:12px}
 .articleSearchHint{font-size:10px;color:#aeb7bf;line-height:1.4;margin-top:8px}
 .articleResults{background:#f7f8fa;color:#111;border-radius:12px;overflow:hidden}
+.articleResultCard{display:grid;grid-template-columns:72px 1fr auto;gap:12px;align-items:center;background:#fff;border:1px solid #d9dde2;border-radius:14px;padding:12px;box-shadow:0 1px 0 rgba(0,0,0,.03)}
+.articleThumb{width:72px;height:72px;border-radius:10px;object-fit:contain;background:#f3f4f6;border:1px solid #e1e5e9}
+.articleResultTitle{font-size:14px;font-weight:800;line-height:1.25;margin-bottom:5px}
+.articleResultSource{font-size:11px;color:#6a7179;margin-bottom:6px}
+.articleResultMeta{font-size:10px;color:#6a7179;line-height:1.45}
+.articleResultPrice{font-size:20px;font-weight:900;text-align:right;white-space:nowrap}
+.articleBest{display:inline-block;background:#16a34a;color:#fff;border-radius:999px;padding:4px 8px;font-size:9px;font-weight:900;margin-bottom:5px}
+.articleOfferBtn{display:inline-flex;justify-content:center;align-items:center;min-height:40px;padding:0 12px;border:0;border-radius:10px;background:#111;color:#fff;text-decoration:none;font-weight:800;font-size:10px;white-space:nowrap}
+.articleEmpty{padding:18px;background:#f7f8fa;border-radius:12px;color:#666;font-size:12px;text-align:center}
+.articleLoading{padding:20px;background:#fff;border:1px solid #ddd;border-radius:12px;text-align:center;color:#555;font-size:12px}
+@media(max-width:640px){.articleResultCard{grid-template-columns:58px 1fr;align-items:start}.articleThumb{width:58px;height:58px}.articleResultPrice{grid-column:2;text-align:left;font-size:18px}.articleOfferBtn{grid-column:2;justify-self:start}.articleBest{margin-top:2px}}
+
 .articleEmpty{padding:20px;text-align:center;color:#69737c;font-size:12px}
 .articleResult{display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid #dfe3e6}
 .articleResult:last-child{border-bottom:0}
@@ -785,13 +797,13 @@ document.querySelector("#securityLock .securityBox")?.addEventListener("click", 
   <div class="header">
     <button class="back" onclick="goHome()">‹</button>
     <div class="headericon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3"><circle cx="21" cy="21" r="12"/><path d="m30 30 10 10M15 21h12M21 15v12"/></svg></div>
-    <div><h2>COMPARADOR ONLINE</h2><p>Busca precios actuales en tiendas de Internet</p></div>
+    <div><h2>COMPARADOR ONLINE</h2><p>Busca precios de tiendas online sin salir de Control Fiscal</p></div>
   </div>
   <div class="page">
     <div class="articleSearchBox">
       <div class="field"><label>¿QUÉ ARTÍCULO BUSCAS?</label><input id="articleSearchInput" class="input" placeholder="Ej. DAS Vantec 215, cable DMX 10 m..." autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();searchOnlineArticles();}"></div>
-      <button class="save p" type="button" onclick="searchOnlineArticles()">🔎 ABRIR GOOGLE SHOPPING</button>
-      <div class="articleSearchHint">Abre directamente Google Shopping en España para comparar precios actuales de distintas tiendas online. Sin API y sin esperas del servidor.</div>
+      <button id="articleSearchBtn" class="save p" type="button" onclick="searchOnlineArticles()">🔎 BUSCAR PRECIOS</button>
+      <div class="articleSearchHint">Consulta resultados actuales de Google Shopping para España. Los resultados se muestran aquí y solo sales de la aplicación cuando pulsas «Ver oferta».</div>
     </div>
     <div id="articleSearchResults" class="articleResults"></div>
   </div>
@@ -971,6 +983,13 @@ document.querySelector("#securityLock .securityBox")?.addEventListener("click", 
         </div>
         <div id="supplierPanel" class="supplierPanel"></div>
         <button class="resetSettings" type="button" onclick="clearSupplierCategory()">BORRAR LISTA MOSTRADA</button>
+      </div>
+
+      <div class="settingsGroup">
+        <div class="settingsTitle">🔎 COMPARADOR DE PRECIOS</div>
+        <div class="settingsHint">Conecta el comparador con Serper para mostrar resultados de Google Shopping dentro de Control Fiscal. La clave se guarda en Google Apps Script y no se publica en GitHub.</div>
+        <button class="guideBtn" type="button" onclick="openComparatorSettings()"><span class="guideIcon">🔎</span><span>CONFIGURAR COMPARADOR</span></button>
+        <div id="comparatorStatusText" class="settingsHint" style="margin-top:8px">Estado: comprobando...</div>
       </div>
 
       <div class="settingsGroup">
@@ -1218,6 +1237,7 @@ function openSettings(){
   renderSupplierPanel();
   loadSuppliersFromGoogle(false);
   loadInvoiceSettings(false);
+  loadComparatorStatus(false);
 }
 
 function saveSetting(key,value){
@@ -1579,30 +1599,59 @@ function refreshSimpleClientSelect(){
   if(current && savedClients[current]) sel.value=current;
 }
 
-function openArticleSearch(){
-  only('articleSearchPage');
-  nav('home');
-  const input=$("articleSearchInput");
-  if(input){ input.value=''; setTimeout(()=>input.focus(),50); }
-  const out=$("articleSearchResults");
-  if(out) out.innerHTML='<div class="articleEmpty">Escribe el producto y pulsa "ABRIR GOOGLE SHOPPING".</div>';
+async function loadComparatorStatus(showError=false){
+  const el=$("comparatorStatusText");
+  if(!el) return;
+  try{const data=await callAction({accion:"estadoComparador"});el.textContent=data.configurado?"Estado: configurado ✓":"Estado: falta configurar la API Key";}catch(e){el.textContent="Estado: no disponible";if(showError)showToastMessage("Comparador",e.message||"No se pudo comprobar el estado.");}
 }
-
-function searchOnlineArticles(){
-  const q=$("articleSearchInput")?.value.trim()||"";
-  const out=$("articleSearchResults");
-  if(!out) return;
-  if(q.length<2){
-    out.innerHTML='<div class="articleEmpty">Escribe al menos 2 caracteres.</div>';
-    return;
-  }
-  const url='https://www.google.com/search?tbm=shop&hl=es&gl=es&q='+encodeURIComponent(q);
-  out.innerHTML=`<div class="articleSearchDirect">
-    <div class="articleDirectIcon">🔎</div>
-    <div><b>GOOGLE SHOPPING</b><p>Se abrirán los resultados de <strong>${esc(q)}</strong> en Google Shopping España.</p></div>
-    <button class="save p" type="button" onclick="window.location.href='${url.replace(/'/g, "%27")}'">ABRIR GOOGLE SHOPPING ↗</button>
-  </div>`;
-  window.location.href=url;
+function openComparatorSettings(){
+  $("comparatorSettingsModal")?.classList.remove("hidden");
+  $("serperApiKey").value="";
+  $("comparatorMsg").textContent="";
+  loadComparatorStatus(false);
+}
+function closeComparatorSettings(){
+  $("comparatorSettingsModal")?.classList.add("hidden");
+  const msg=$("comparatorMsg");if(msg){msg.className="msg";msg.textContent="";}
+}
+async function saveComparatorKey(){
+  const key=$("serperApiKey")?.value.trim()||"";const msg=$("comparatorMsg");
+  if(!key){msg.className="msg err";msg.textContent="Pega una API Key válida.";return;}
+  msg.className="msg";msg.textContent="Guardando...";
+  try{await callAction({accion:"guardarComparadorClave",apiKey:key});msg.className="msg ok";msg.textContent="Clave guardada ✓";$("comparatorStatusText").textContent="Estado: configurado ✓";}catch(e){msg.className="msg err";msg.textContent=e.message||"No se pudo guardar la clave.";}
+}
+async function testComparatorKey(){
+  const msg=$("comparatorMsg");msg.className="msg";msg.textContent="Probando búsqueda...";
+  try{const data=await callAction({accion:"buscarArticulos",q:"DAS Vantec 215"});msg.className="msg ok";msg.textContent=`Conexión correcta. ${Array.isArray(data.articulos)?data.articulos.length:0} resultados.`;}catch(e){msg.className="msg err";msg.textContent=e.message||"No se pudo conectar con el comparador.";}
+}
+function openArticleSearch(){
+  only('articleSearchPage');nav('home');
+  const input=$("articleSearchInput");if(input){input.value='';setTimeout(()=>input.focus(),50);}
+  const out=$("articleSearchResults");if(out)out.innerHTML='<div class="articleEmpty">Escribe un producto y pulsa «Buscar precios». Los resultados aparecerán dentro de la aplicación.</div>';
+}
+function formatOnlinePrice(price){
+  const n=Number(price);return Number.isFinite(n)?new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n):String(price||'');
+}
+function escAttr(v){return String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function renderOnlineArticles(items,q){
+  const out=$("articleSearchResults");if(!out)return;
+  if(!Array.isArray(items)||!items.length){out.innerHTML='<div class="articleEmpty">No se han encontrado ofertas con precio para esta búsqueda.</div>';return;}
+  const sorted=[...items].sort((a,b)=>(Number(a.precio)||Infinity)-(Number(b.precio)||Infinity));
+  const minPrice=Number(sorted[0]?.precio)||0;
+  out.innerHTML=sorted.map(item=>{
+    const image=item.imagen?`<img class="articleThumb" src="${escAttr(item.imagen)}" alt="">`:'<div class="articleThumb"></div>';
+    const rating=item.valoracion?`⭐ ${esc(String(item.valoracion))}${item.reseñas?` · ${esc(String(item.reseñas))} reseñas`:''}`:'';
+    const meta=[item.envio||'',rating].filter(Boolean).map(esc).join(' · ');
+    const offer=item.enlace?`<a class="articleOfferBtn" href="${escAttr(item.enlace)}" target="_blank" rel="noopener">VER OFERTA ↗</a>`:'';
+    const best=(Number(item.precio)||0)===minPrice;
+    return `<div class="articleResultCard">${image}<div>${best?'<span class="articleBest">MÁS BARATO DE LOS RESULTADOS</span>':''}<div class="articleResultTitle">${esc(item.titulo||'Producto')}</div><div class="articleResultSource">${esc(item.tienda||'Tienda online')}</div><div class="articleResultMeta">${meta||'Oferta online'}</div></div><div><div class="articleResultPrice">${formatOnlinePrice(item.precio)}</div>${offer}</div></div>`;
+  }).join('');
+}
+async function searchOnlineArticles(){
+  const q=$("articleSearchInput")?.value.trim()||"";const out=$("articleSearchResults");const btn=$("articleSearchBtn");if(!out)return;
+  if(q.length<2){out.innerHTML='<div class="articleEmpty">Escribe al menos 2 caracteres.</div>';return;}
+  if(btn){btn.disabled=true;btn.textContent='⏳ BUSCANDO...';}out.innerHTML='<div class="articleLoading">Buscando precios online…</div>';
+  try{const data=await callAction({accion:"buscarArticulos",q});if(data?.configRequired){out.innerHTML='<div class="articleEmpty">Primero configura el comparador en Ajustes → Configurar comparador.</div>';return;}renderOnlineArticles(data.articulos||[],q);}catch(e){out.innerHTML=`<div class="articleEmpty">${esc(e.message||'No se pudo realizar la búsqueda.')}</div>`;}finally{if(btn){btn.disabled=false;btn.textContent='🔎 BUSCAR PRECIOS';}}
 }
 
 function openSimpleClientModal(){
@@ -2878,6 +2927,19 @@ securityStart();
 
 
 
+
+<div id="comparatorSettingsModal" class="modal hidden" onclick="if(event.target===this)closeComparatorSettings()">
+  <div class="modalCard">
+    <button class="modalClose" type="button" onclick="closeComparatorSettings()">×</button>
+    <div class="modalTitle">🔎 Configurar comparador</div>
+    <div class="settingsHint" style="margin-bottom:14px">Necesitas una API Key de Serper. Su cuenta actual ofrece 2.500 consultas gratuitas para empezar. La clave se guarda en Apps Script, no en la web pública.</div>
+    <div class="field"><label>API KEY DE SERPER</label><input id="serperApiKey" class="input" type="password" autocomplete="off" placeholder="Pega aquí tu API Key"></div>
+    <button class="save p settingsSave" type="button" onclick="saveComparatorKey()">GUARDAR CLAVE</button>
+    <button class="resetSettings" type="button" onclick="testComparatorKey()">PROBAR CONEXIÓN</button>
+    <div id="comparatorMsg" class="msg"></div>
+    <div class="settingsHint" style="margin-top:10px">Obtén la clave en <a href="https://serper.dev/" target="_blank" rel="noopener">serper.dev</a>.</div>
+  </div>
+</div>
 
 <div id="clientSaveModal" class="modal hidden" onclick="if(event.target===this)closeSimpleClientModal()">
   <div class="modalCard">
