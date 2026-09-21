@@ -803,7 +803,7 @@ document.querySelector("#securityLock .securityBox")?.addEventListener("click", 
     <div class="articleSearchBox">
       <div class="field"><label>¿QUÉ ARTÍCULO BUSCAS?</label><input id="articleSearchInput" class="input" placeholder="Ej. DAS Vantec 215, cable DMX 10 m..." autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();searchOnlineArticles();}"></div>
       <button id="articleSearchBtn" class="save p" type="button" onclick="searchOnlineArticles()">🔎 BUSCAR PRECIOS</button>
-      <div class="articleSearchHint">Consulta resultados actuales de Google Shopping para España. Los resultados se muestran aquí y solo sales de la aplicación cuando pulsas «Ver oferta».</div>
+      <div class="articleSearchHint">Consulta resultados actuales de Google Shopping para España a través de Bright Data. Los resultados se muestran aquí y solo sales de la aplicación cuando pulsas «Ver oferta».</div>
     </div>
     <div id="articleSearchResults" class="articleResults"></div>
   </div>
@@ -987,7 +987,7 @@ document.querySelector("#securityLock .securityBox")?.addEventListener("click", 
 
       <div class="settingsGroup">
         <div class="settingsTitle">🔎 COMPARADOR DE PRECIOS</div>
-        <div class="settingsHint">Conecta el comparador con Serper para mostrar resultados de Google Shopping dentro de Control Fiscal. La clave se guarda en Google Apps Script y no se publica en GitHub.</div>
+        <div class="settingsHint">Conecta el comparador con Bright Data para mostrar resultados de Google Shopping dentro de Control Fiscal. La clave se guarda en Google Apps Script y no se publica en GitHub.</div>
         <button class="guideBtn" type="button" onclick="openComparatorSettings()"><span class="guideIcon">🔎</span><span>CONFIGURAR COMPARADOR</span></button>
         <div id="comparatorStatusText" class="settingsHint" style="margin-top:8px">Estado: comprobando...</div>
       </div>
@@ -1602,11 +1602,12 @@ function refreshSimpleClientSelect(){
 async function loadComparatorStatus(showError=false){
   const el=$("comparatorStatusText");
   if(!el) return;
-  try{const data=await callAction({accion:"estadoComparador"});el.textContent=data.configurado?"Estado: configurado ✓":"Estado: falta configurar la API Key";}catch(e){el.textContent="Estado: no disponible";if(showError)showToastMessage("Comparador",e.message||"No se pudo comprobar el estado.");}
+  try{const data=await callAction({accion:"estadoComparador"});el.textContent=data.configurado?`Estado: configurado ✓${data.zona?" · "+data.zona:""}`:"Estado: falta configurar la API Key";}catch(e){el.textContent="Estado: no disponible";if(showError)showToastMessage("Comparador",e.message||"No se pudo comprobar el estado.");}
 }
 function openComparatorSettings(){
   $("comparatorSettingsModal")?.classList.remove("hidden");
-  $("serperApiKey").value="";
+  $("brightDataApiKey").value="";
+  $("brightDataZone").value="serp_api1";
   $("comparatorMsg").textContent="";
   loadComparatorStatus(false);
 }
@@ -1615,10 +1616,10 @@ function closeComparatorSettings(){
   const msg=$("comparatorMsg");if(msg){msg.className="msg";msg.textContent="";}
 }
 async function saveComparatorKey(){
-  const key=$("serperApiKey")?.value.trim()||"";const msg=$("comparatorMsg");
+  const key=$("brightDataApiKey")?.value.trim()||"";const zone=$("brightDataZone")?.value.trim()||"serp_api1";const msg=$("comparatorMsg");
   if(!key){msg.className="msg err";msg.textContent="Pega una API Key válida.";return;}
   msg.className="msg";msg.textContent="Guardando...";
-  try{await callAction({accion:"guardarComparadorClave",apiKey:key});msg.className="msg ok";msg.textContent="Clave guardada ✓";$("comparatorStatusText").textContent="Estado: configurado ✓";}catch(e){msg.className="msg err";msg.textContent=e.message||"No se pudo guardar la clave.";}
+  try{const data=await callAction({accion:"guardarComparadorClave",apiKey:key,zone});msg.className="msg ok";msg.textContent=`Clave guardada ✓ · Zona ${data.zona||zone}`;$("comparatorStatusText").textContent="Estado: configurado ✓";}catch(e){msg.className="msg err";msg.textContent=e.message||"No se pudo guardar la clave.";}
 }
 async function testComparatorKey(){
   const msg=$("comparatorMsg");msg.className="msg";msg.textContent="Probando búsqueda...";
@@ -2932,12 +2933,13 @@ securityStart();
   <div class="modalCard">
     <button class="modalClose" type="button" onclick="closeComparatorSettings()">×</button>
     <div class="modalTitle">🔎 Configurar comparador</div>
-    <div class="settingsHint" style="margin-bottom:14px">Necesitas una API Key de Serper. Su cuenta actual ofrece 2.500 consultas gratuitas para empezar. La clave se guarda en Apps Script, no en la web pública.</div>
-    <div class="field"><label>API KEY DE SERPER</label><input id="serperApiKey" class="input" type="password" autocomplete="off" placeholder="Pega aquí tu API Key"></div>
+    <div class="settingsHint" style="margin-bottom:14px">Necesitas una API Key de Bright Data. La clave y la zona se guardan en Google Apps Script, no en GitHub ni en la aplicación pública.</div>
+    <div class="field"><label>API KEY DE BRIGHT DATA</label><input id="brightDataApiKey" class="input" type="password" autocomplete="off" placeholder="Pega aquí tu API Key"></div>
+    <div class="field"><label>ZONA DE BRIGHT DATA</label><input id="brightDataZone" class="input" type="text" value="serp_api1" autocomplete="off" placeholder="Ej. serp_api1"></div>
     <button class="save p settingsSave" type="button" onclick="saveComparatorKey()">GUARDAR CLAVE</button>
     <button class="resetSettings" type="button" onclick="testComparatorKey()">PROBAR CONEXIÓN</button>
     <div id="comparatorMsg" class="msg"></div>
-    <div class="settingsHint" style="margin-top:10px">Obtén la clave en <a href="https://serper.dev/" target="_blank" rel="noopener">serper.dev</a>.</div>
+    <div class="settingsHint" style="margin-top:10px">Usa la zona que aparece en tu panel de Bright Data. Normalmente es <b>serp_api1</b>.</div>
   </div>
 </div>
 
