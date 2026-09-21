@@ -1459,6 +1459,92 @@ function openFacturacionPage(){
   body.appendChild(wrap);
 }
 
+
+let savedClients=[];
+let clientSyncInProgress=false;
+
+async function loadClients(showError=false){
+  if(clientSyncInProgress) return;
+  clientSyncInProgress=true;
+  try{
+    const data=await callAction({accion:"listarClientes"});
+    savedClients=Array.isArray(data.clientes)?data.clientes:[];
+    localStorage.setItem("cf_clients",JSON.stringify(savedClients));
+    refreshInvoiceClientSelect();
+  }catch(e){
+    try{ savedClients=JSON.parse(localStorage.getItem("cf_clients")||"[]"); }catch(_){ savedClients=[]; }
+    refreshInvoiceClientSelect();
+    if(showError) showToastMessage("Sin conexión","No se pudieron cargar los clientes guardados.");
+  }finally{ clientSyncInProgress=false; }
+}
+
+function refreshInvoiceClientSelect(){
+  const sel=$("invSavedClient");
+  if(!sel) return;
+  const current=sel.value;
+  sel.innerHTML='<option value="">Seleccionar cliente guardado...</option>'+
+    savedClients.map((c,i)=>`<option value="${i}">${esc(c.nombre||"")}${c.cif?" · "+esc(c.cif):""}</option>`).join("");
+  if(current && savedClients[current]) sel.value=current;
+}
+
+function loadSavedClient(index){
+  const c=savedClients[Number(index)];
+  if(!c) return;
+  const map={invClientName:c.nombre,invClientTaxId:c.cif,invClientAddress:c.direccion,invClientPostalCode:c.cp,invClientCity:c.ciudad,invClientProvince:c.provincia,invClientPhone:c.telefono,invClientEmail:c.email};
+  Object.entries(map).forEach(([id,v])=>{if($(id))$(id).value=v||"";});
+}
+
+async function saveCurrentClient(){
+  const client={
+    nombre:$("invClientName")?.value.trim()||"",
+    cif:$("invClientTaxId")?.value.trim()||"",
+    direccion:$("invClientAddress")?.value.trim()||"",
+    cp:$("invClientPostalCode")?.value.trim()||"",
+    ciudad:$("invClientCity")?.value.trim()||"",
+    provincia:$("invClientProvince")?.value.trim()||"",
+    telefono:$("invClientPhone")?.value.trim()||"",
+    email:$("invClientEmail")?.value.trim()||""
+  };
+  if(!client.nombre || !client.cif){ showToastMessage("Faltan datos","Indica al menos nombre/empresa y CIF/NIF del cliente."); return; }
+  try{
+    const data=await callAction({accion:"guardarCliente",cliente:JSON.stringify(client)});
+    savedClients=Array.isArray(data.clientes)?data.clientes:savedClients;
+    localStorage.setItem("cf_clients",JSON.stringify(savedClients));
+    refreshInvoiceClientSelect();
+    showToastMessage("Cliente guardado","Los datos quedan disponibles para futuras facturas.");
+  }catch(e){ showToastMessage("Error",e.message||"No se pudo guardar el cliente."); }
+}
+
+function openSimpleClientModal(){
+  const name=$("tercero")?.value.trim()||"";
+  const modal=$("clientSaveModal");
+  if(!modal) return;
+  $("savedClientName").value=name;
+  $("savedClientTaxId").value="";
+  $("savedClientAddress").value="";
+  $("savedClientPostalCode").value="";
+  $("savedClientCity").value="";
+  $("savedClientProvince").value="";
+  $("savedClientPhone").value="";
+  $("savedClientEmail").value="";
+  $("clientSaveMsg").textContent="";
+  modal.classList.remove("hidden");
+}
+function closeSimpleClientModal(){ $("clientSaveModal")?.classList.add("hidden"); }
+async function saveSimpleClient(){
+  const client={nombre:$("savedClientName")?.value.trim()||"",cif:$("savedClientTaxId")?.value.trim()||"",direccion:$("savedClientAddress")?.value.trim()||"",cp:$("savedClientPostalCode")?.value.trim()||"",ciudad:$("savedClientCity")?.value.trim()||"",provincia:$("savedClientProvince")?.value.trim()||"",telefono:$("savedClientPhone")?.value.trim()||"",email:$("savedClientEmail")?.value.trim()||""};
+  const msg=$("clientSaveMsg");
+  if(!client.nombre || !client.cif){msg.className="msg err";msg.textContent="Indica al menos nombre/empresa y CIF/NIF.";return;}
+  try{
+    const data=await callAction({accion:"guardarCliente",cliente:JSON.stringify(client)});
+    savedClients=Array.isArray(data.clientes)?data.clientes:savedClients;
+    localStorage.setItem("cf_clients",JSON.stringify(savedClients));
+    if($("tercero"))$("tercero").value=client.nombre;
+    msg.className="msg ok";msg.textContent="Cliente guardado ✓";
+    setTimeout(closeSimpleClientModal,500);
+  }catch(e){msg.className="msg err";msg.textContent=e.message||"No se pudo guardar el cliente.";}
+}
+
 function openInvoiceForm(){
   only("formPage");
   nav("sale");
@@ -1482,6 +1568,10 @@ function openInvoiceForm(){
 
       <div class="invoiceSection">
         <h3>👤 DATOS DEL CLIENTE</h3>
+        <div class="two" style="margin-bottom:10px">
+          <div class="field"><label>Cliente guardado</label><select id="invSavedClient" class="select" onchange="loadSavedClient(this.value)"><option value="">Seleccionar cliente guardado...</option></select></div>
+          <div class="field" style="display:flex;align-items:end"><button class="invoiceAdd" type="button" onclick="saveCurrentClient()">💾 GUARDAR CLIENTE</button></div>
+        </div>
         <div class="invoiceGrid">
           <div class="field"><label>Nombre / Empresa</label><input id="invClientName" class="input" placeholder="Ej. Empresa cliente"></div>
           <div class="field"><label>CIF / NIF</label><input id="invClientTaxId" class="input" placeholder="CIF / NIF"></div>
@@ -1520,6 +1610,7 @@ function openInvoiceForm(){
     </div>`;
   addInvoiceLine();
   recalcInvoice();
+  loadClients(false);
 }
 
 function addInvoiceLine(){
@@ -1573,6 +1664,8 @@ function recalcInvoice(){
   return {base:baseConDescuento,iva,total,ivaPct,discount};
 }
 
+let invoiceRequestId = null;
+
 async function saveInvoice(){
   const msg=$("invoiceMsg"),btn=$("invoiceSaveBtn");
   const client={
@@ -1594,6 +1687,7 @@ async function saveInvoice(){
 
   const payload={
     accion:"crearFactura",
+    requestId:(invoiceRequestId ||= (crypto.randomUUID ? crypto.randomUUID() : (Date.now()+"-"+Math.random().toString(16).slice(2)))),
     tercero:client.nombre,
     concepto:lineas.map(x=>x.concepto).filter(Boolean).join(" · ").substring(0,500),
     base:+calc.base.toFixed(2),
@@ -1612,6 +1706,7 @@ async function saveInvoice(){
     await syncFromSheets();
     msg.className="msg ok";
     msg.textContent=`Factura ${result.numeroFactura||""} guardada en Facturación y PDF subido a Google Drive ✓`;
+    invoiceRequestId=null;
     setTimeout(()=>showInvoiceToast(result.numeroFactura||"Factura"),250);
   }catch(e){
     console.error(e); msg.className="msg err"; msg.textContent=e.message||"No se pudo guardar la factura.";
@@ -1659,6 +1754,7 @@ function openForm(tipo){
           <input id="tercero" class="input" placeholder="${c?"Ej. MadridHifi":"Ej. Ayuntamiento, empresa, particular"}" autocomplete="off">
           ${c?'<div id="thirdPartyAutocomplete" class="autocompleteMenu"></div>':""}
         </div>
+        <button class="invoiceAdd" type="button" style="margin-top:8px" onclick="openSimpleClientModal()">💾 GUARDAR DATOS DEL CLIENTE</button>
       </div>
 
       <div class="field">
@@ -1948,7 +2044,7 @@ function callAction(payload){
     const params=new URLSearchParams();
     params.set("callback",callback);
     Object.entries(payload).forEach(([k,v])=>params.set(k,String(v)));
-    const timeout=setTimeout(()=>{cleanup();reject(new Error("Tiempo de espera agotado"));},15000);
+    const timeout=setTimeout(()=>{cleanup();reject(new Error("La operación está tardando más de lo normal. Puedes volver a pulsar guardar; la factura no se duplicará."));},90000);
     window[callback]=data=>{
       cleanup();
       if(data&&data.ok) resolve(data);
@@ -2678,9 +2774,31 @@ function securityStart(){
  * dispararse al abrir el teclado y cerrar accidentalmente
  * la ventana del PIN.
  */
+loadClients(false);
 securityStart();
 
 </script>
+
+
+<div id="clientSaveModal" class="modal hidden" onclick="if(event.target===this)closeSimpleClientModal()">
+  <div class="modalCard">
+    <button class="modalClose" type="button" onclick="closeSimpleClientModal()">×</button>
+    <div class="modalTitle">👤 Guardar cliente</div>
+    <div class="settingsHint" style="margin-bottom:14px">Guarda estos datos para reutilizarlos en futuras facturas.</div>
+    <div class="settingsInvoiceGrid">
+      <div class="field"><label>Nombre / Empresa</label><input id="savedClientName" class="input" placeholder="Ej. Empresa cliente"></div>
+      <div class="field"><label>CIF / NIF</label><input id="savedClientTaxId" class="input" placeholder="Ej. B00000000"></div>
+      <div class="field full"><label>Dirección</label><input id="savedClientAddress" class="input" placeholder="Ej. Calle Principal 1"></div>
+      <div class="field"><label>Código postal</label><input id="savedClientPostalCode" class="input" placeholder="Ej. 28001"></div>
+      <div class="field"><label>Ciudad</label><input id="savedClientCity" class="input" placeholder="Ej. Madrid"></div>
+      <div class="field"><label>Provincia</label><input id="savedClientProvince" class="input" placeholder="Ej. Madrid"></div>
+      <div class="field"><label>Teléfono</label><input id="savedClientPhone" class="input" placeholder="Ej. 900 000 000"></div>
+      <div class="field"><label>Email</label><input id="savedClientEmail" class="input" type="email" placeholder="cliente@empresa.com"></div>
+    </div>
+    <button class="save p settingsSave" type="button" onclick="saveSimpleClient()">GUARDAR CLIENTE</button>
+    <div id="clientSaveMsg" class="msg"></div>
+  </div>
+</div>
 
 <div id="invoiceSettingsModal" class="modal hidden" onclick="if(event.target===this)closeInvoiceSettings()">
   <div class="modalCard">
