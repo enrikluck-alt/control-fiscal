@@ -140,27 +140,6 @@ button{cursor:pointer}
 .headericon svg{width:30px;height:30px}
 .header h2{margin:0;font-size:21px}
 .header p{margin:4px 0 0;color:#adb7bf;font-size:10px}
-.articleSearchBox{background:#121a21;border:1px solid #303d47;border-radius:14px;padding:13px;margin-bottom:12px}
-.articleSearchHint{font-size:10px;color:#aeb7bf;line-height:1.4;margin-top:8px}
-.articleResults{background:#f7f8fa;color:#111;border-radius:12px;overflow:hidden}
-.articleResultCard{display:grid;grid-template-columns:72px 1fr auto;gap:12px;align-items:center;background:#fff;border:1px solid #d9dde2;border-radius:14px;padding:12px;box-shadow:0 1px 0 rgba(0,0,0,.03)}
-.articleThumb{width:72px;height:72px;border-radius:10px;object-fit:contain;background:#f3f4f6;border:1px solid #e1e5e9}
-.articleResultTitle{font-size:14px;font-weight:800;line-height:1.25;margin-bottom:5px}
-.articleResultSource{font-size:11px;color:#6a7179;margin-bottom:6px}
-.articleResultMeta{font-size:10px;color:#6a7179;line-height:1.45}
-.articleResultPrice{font-size:20px;font-weight:900;text-align:right;white-space:nowrap}
-.articleBest{display:inline-block;background:#16a34a;color:#fff;border-radius:999px;padding:4px 8px;font-size:9px;font-weight:900;margin-bottom:5px}
-.articleOfferBtn{display:inline-flex;justify-content:center;align-items:center;min-height:40px;padding:0 12px;border:0;border-radius:10px;background:#111;color:#fff;text-decoration:none;font-weight:800;font-size:10px;white-space:nowrap}
-.articleEmpty{padding:18px;background:#f7f8fa;border-radius:12px;color:#666;font-size:12px;text-align:center}
-.articleLoading{padding:20px;background:#fff;border:1px solid #ddd;border-radius:12px;text-align:center;color:#555;font-size:12px}
-@media(max-width:640px){.articleResultCard{grid-template-columns:58px 1fr;align-items:start}.articleThumb{width:58px;height:58px}.articleResultPrice{grid-column:2;text-align:left;font-size:18px}.articleOfferBtn{grid-column:2;justify-self:start}.articleBest{margin-top:2px}}
-
-.articleEmpty{padding:20px;text-align:center;color:#69737c;font-size:12px}
-.articleResult{display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid #dfe3e6}
-.articleResult:last-child{border-bottom:0}
-.articleStore{flex:1;min-width:0}.articleStore b{display:block;font-size:12px}.articleStore small{display:block;color:#68727b;font-size:9px;margin-top:3px}
-.articlePrice{text-align:right;font-size:14px;font-weight:900;white-space:nowrap}.articleBadge{font-size:8px;padding:4px 6px;border-radius:8px;background:#49ee9d;color:#07130d;font-weight:800}
-
 .form{padding:0 16px}
 .field{margin-bottom:13px}
 .field label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}
@@ -422,17 +401,70 @@ button{cursor:pointer}
 }
 
 
-.articleResult.onlineResult{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px 10px;align-items:center}
-.onlineResult .articleStore strong{display:block;color:var(--white);font-size:12px;margin-top:3px;line-height:1.3}
-.onlineResult .articleStore small{display:block;color:var(--muted);font-size:9px;margin-top:3px}
-.articleOpen{grid-column:1/-1;justify-self:start;color:var(--yellow);text-decoration:none;font-size:10px;font-weight:900}
-@media(max-width:520px){.articleResult.onlineResult{grid-template-columns:1fr}.onlineResult .articlePrice{justify-self:start}.articleOpen{grid-column:auto}}
-
-
-.articleSearchDirect{margin-top:14px;display:grid;gap:12px;padding:18px;border:1px solid var(--border,#ddd);border-radius:14px;background:var(--card,#fff)}
-.articleSearchDirect b{font-size:16px}
-.articleSearchDirect p{margin:5px 0 0;opacity:.72;line-height:1.4}
-.articleDirectIcon{font-size:30px}
+/* =========================================================
+   INVENTARIO + AGENDA · V46
+   ========================================================= */
+.inventoryTop{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;margin-bottom:10px}
+.stockStats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 10px}
+.stockStat{background:#111920;border:1px solid #3b4b57;border-radius:12px;padding:11px}
+.stockStat small{display:block;color:#aeb7bf;font-size:9px}
+.stockStat strong{display:block;font-size:19px;margin-top:5px}
+.stockLow{color:#ff717a!important}
+.stockList{display:grid;gap:8px}
+.stockCard{background:#111920;border:1px solid #3b4b57;border-radius:13px;padding:12px}
+.stockHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.stockName{font-size:14px;font-weight:900}
+.stockMeta{color:#9da7b0;font-size:9px;margin-top:3px;line-height:1.4}
+.stockQty{font-size:20px;font-weight:900;text-align:right;white-space:nowrap}
+.stockQty.low{color:#ff717a}
+.stockQty.ok{color:#35d07f}
+.stockActions{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.stockActions button,.stockActions a{flex:1;min-width:84px;height:39px;border:1px solid #53616d;border-radius:9px;background:#1a232b;color:#fff;font-size:10px;font-weight:800;text-decoration:none;display:flex;align-items:center;justify-content:center}
+.stockActions .plus{background:var(--yellow);color:#111;border-color:var(--yellow)}
+.stockActions .minus{background:#2a343d}
+.stockActions .edit{background:#1a232b}
+.agendaToolbar{display:grid;grid-template-columns:42px 1fr 42px;gap:7px;align-items:center;margin-bottom:9px}
+.agendaMonth{text-align:center;font-size:14px;font-weight:900}
+.agendaNav{height:42px;border:1px solid #46545f;background:#111a21;color:#fff;border-radius:10px;font-size:20px}
+.agendaToday{width:100%;height:42px;border:1px solid #46545f;background:#111a21;color:#fff;border-radius:10px;font-size:10px;font-weight:900;margin-bottom:9px}
+.calendar{background:#111920;border:1px solid #3b4b57;border-radius:13px;overflow:hidden}
+.calendarWeek{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid #2f3c45}
+.calendarWeek div{padding:8px 2px;text-align:center;font-size:8px;color:#8f9aa2;font-weight:900}
+.calendarGrid{display:grid;grid-template-columns:repeat(7,1fr)}
+.calDay{min-height:72px;border-right:1px solid #29353e;border-bottom:1px solid #29353e;padding:5px 4px;cursor:pointer}
+.calDay:nth-child(7n){border-right:0}
+.calDay.muted{opacity:.38}
+.calDay.today{background:#18252d}
+.calNum{font-size:10px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;margin-bottom:3px}
+.calDay.today .calNum{background:var(--yellow);color:#111}
+.calEvent{display:block;background:#202c35;border-left:3px solid var(--purple);border-radius:5px;padding:3px 4px;margin-top:3px;font-size:8px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calEvent.more{color:#aeb7bf;background:transparent;border-left:0;padding-left:0}
+.agendaSectionTitle{display:flex;justify-content:space-between;align-items:center;margin:12px 0 7px}
+.agendaSectionTitle h3{margin:0;font-size:13px}
+.agendaEventList{display:grid;gap:7px}
+.agendaCard{background:#111920;border:1px solid #3b4b57;border-radius:12px;padding:11px}
+.agendaCardTop{display:flex;justify-content:space-between;gap:10px}
+.agendaCardTitle{font-size:13px;font-weight:900}
+.agendaCardTime{font-size:10px;color:var(--yellow);font-weight:900;white-space:nowrap}
+.agendaCardMeta{color:#9da7b0;font-size:9px;margin-top:4px;line-height:1.45}
+.agendaCardActions{display:flex;gap:7px;margin-top:9px}
+.agendaCardActions button,.agendaCardActions a{flex:1;height:38px;border:1px solid #53616d;border-radius:9px;background:#1a232b;color:#fff;font-size:10px;font-weight:800;text-decoration:none;display:flex;align-items:center;justify-content:center}
+.agendaAdd{width:100%;height:46px;border:0;border-radius:10px;background:var(--purple);color:#111;font-weight:900;margin-bottom:10px}
+.agendaFormGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.agendaFormGrid .full{grid-column:1/-1}
+.textarea{width:100%;min-height:88px;resize:vertical;background:#111a21;color:#eef1f3;border:1px solid #53616d;border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.4}
+.inventoryModalGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.inventoryModalGrid .full{grid-column:1/-1}
+@media(max-width:430px){
+  .agendaFormGrid,.inventoryModalGrid{grid-template-columns:1fr}
+  .agendaFormGrid .full,.inventoryModalGrid .full{grid-column:auto}
+  .calDay{min-height:62px;padding:4px 3px}
+  .calEvent{font-size:7px}
+  .stockActions button,.stockActions a{min-width:72px}
+}
+.bottom{grid-template-columns:repeat(6,1fr)}
+.bottom button{font-size:8px}
+.bottom svg{width:23px;height:23px}
 
 </style>
 
@@ -736,7 +768,7 @@ document.querySelector("#securityLock .securityBox")?.addEventListener("click", 
         <div class="chev">›</div>
       </button>
 
-      <button class="home p" onclick="openFacturacionPage()">
+      <button class="home p" onclick="openForm('Facturado')">
         <div class="icon">
           <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3">
             <path d="M12 4h20l9 9v31H12z"/>
@@ -747,13 +779,15 @@ document.querySelector("#securityLock .securityBox")?.addEventListener("click", 
         <div class="chev">›</div>
       </button>
 
-      <button class="home full" onclick="openArticleSearch()">
-        <div class="icon">
-          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3">
-            <circle cx="21" cy="21" r="12"/><path d="m30 30 10 10M15 21h12M21 15v12"/>
-          </svg>
-        </div>
-        <div class="text"><b>BUSCAR ARTÍCULOS</b><small>COMPARA PRECIOS EN TIENDAS ONLINE</small></div>
+      <button class="home full" onclick="openAgenda()">
+        <div class="icon"><span style="font-size:28px">📅</span></div>
+        <div class="text"><b>AGENDA</b><small>EVENTOS, HORAS, UBICACIÓN Y QUÉ LLEVAR</small></div>
+        <div class="chev">›</div>
+      </button>
+
+      <button class="home full" onclick="openInventory()">
+        <div class="icon"><span style="font-size:28px">📦</span></div>
+        <div class="text"><b>INVENTARIO</b><small>CONTROLA TU MATERIAL Y STOCK</small></div>
         <div class="chev">›</div>
       </button>
 
@@ -793,25 +827,52 @@ document.querySelector("#securityLock .securityBox")?.addEventListener("click", 
   </div>
 </section>
 
-<section id="articleSearchPage" class="hidden">
-  <div class="header">
-    <button class="back" onclick="goHome()">‹</button>
-    <div class="headericon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3"><circle cx="21" cy="21" r="12"/><path d="m30 30 10 10M15 21h12M21 15v12"/></svg></div>
-    <div><h2>COMPARADOR ONLINE</h2><p>Busca precios de tiendas online sin salir de Control Fiscal</p></div>
-  </div>
-  <div class="page">
-    <div class="articleSearchBox">
-      <div class="field"><label>¿QUÉ ARTÍCULO BUSCAS?</label><input id="articleSearchInput" class="input" placeholder="Ej. DAS Vantec 215, cable DMX 10 m..." autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();searchOnlineArticles();}"></div>
-      <button id="articleSearchBtn" class="save p" type="button" onclick="searchOnlineArticles()">🔎 BUSCAR PRECIOS</button>
-      <div class="articleSearchHint">Consulta resultados actuales de Google Shopping para España a través de Bright Data. Los resultados se muestran aquí y solo sales de la aplicación cuando pulsas «Ver oferta».</div>
-    </div>
-    <div id="articleSearchResults" class="articleResults"></div>
-  </div>
-</section>
-
 <section id="formPage" class="hidden">
   <div id="formHeader" class="header"></div>
   <div id="formBody"></div>
+</section>
+
+
+<section id="agendaPage" class="hidden">
+  <div class="header">
+    <button class="back" onclick="goHome()">‹</button>
+    <div class="headericon"><span style="font-size:27px">📅</span></div>
+    <div><h2>AGENDA</h2><p>Eventos y planificación</p></div>
+  </div>
+  <div class="page">
+    <button class="agendaAdd" type="button" onclick="openAgendaEventModal()">＋ NUEVO EVENTO</button>
+    <div class="agendaToolbar">
+      <button class="agendaNav" type="button" onclick="changeAgendaMonth(-1)">‹</button>
+      <div id="agendaMonthLabel" class="agendaMonth"></div>
+      <button class="agendaNav" type="button" onclick="changeAgendaMonth(1)">›</button>
+    </div>
+    <button class="agendaToday" type="button" onclick="agendaGoToday()">IR A HOY</button>
+    <div class="calendar">
+      <div class="calendarWeek"><div>L</div><div>M</div><div>X</div><div>J</div><div>V</div><div>S</div><div>D</div></div>
+      <div id="agendaGrid" class="calendarGrid"></div>
+    </div>
+    <div class="agendaSectionTitle"><h3>PRÓXIMOS EVENTOS</h3><span id="agendaCount" class="recordInfo"></span></div>
+    <div id="agendaUpcoming" class="agendaEventList"></div>
+  </div>
+</section>
+
+<section id="inventoryPage" class="hidden">
+  <div class="header">
+    <button class="back" onclick="goHome()">‹</button>
+    <div class="headericon"><span style="font-size:27px">📦</span></div>
+    <div><h2>INVENTARIO</h2><p>Material disponible</p></div>
+  </div>
+  <div class="page">
+    <div class="inventoryTop">
+      <div class="field" style="margin-bottom:0"><label>BUSCAR MATERIAL</label><input id="inventorySearch" class="input" placeholder="Ej. Event 28A, cable DMX..." oninput="renderInventory()"></div>
+      <button class="agendaNav" type="button" onclick="openInventoryModal()">＋</button>
+    </div>
+    <div class="stockStats">
+      <div class="stockStat"><small>ARTÍCULOS</small><strong id="inventoryCount">0</strong></div>
+      <div class="stockStat"><small>STOCK BAJO</small><strong id="inventoryLowCount">0</strong></div>
+    </div>
+    <div id="inventoryList" class="stockList"></div>
+  </div>
 </section>
 
 <section id="summaryPage" class="hidden">
@@ -986,13 +1047,6 @@ document.querySelector("#securityLock .securityBox")?.addEventListener("click", 
       </div>
 
       <div class="settingsGroup">
-        <div class="settingsTitle">🔎 COMPARADOR DE PRECIOS</div>
-        <div class="settingsHint">Conecta el comparador con Bright Data para mostrar resultados de Google Shopping dentro de Control Fiscal. La clave se guarda en Google Apps Script y no se publica en GitHub.</div>
-        <button class="guideBtn" type="button" onclick="openComparatorSettings()"><span class="guideIcon">🔎</span><span>CONFIGURAR COMPARADOR</span></button>
-        <div id="comparatorStatusText" class="settingsHint" style="margin-top:8px">Estado: comprobando...</div>
-      </div>
-
-      <div class="settingsGroup">
         <div class="settingsTitle">🧾 DATOS DE FACTURACIÓN</div>
         <div class="settingsHint">Configura los datos que aparecerán como emisor en tus facturas. Se guardan en Google Sheets para poder utilizarlos también desde el iPhone.</div>
         <button class="guideBtn" type="button" onclick="openInvoiceSettings()">
@@ -1000,8 +1054,6 @@ document.querySelector("#securityLock .securityBox")?.addEventListener("click", 
           <span>EDITAR MIS DATOS DE FACTURACIÓN</span>
         </button>
       </div>
-
-      
 
       <div class="settingsGroup">
         <div class="settingsTitle">ℹ️ INFORMACIÓN</div>
@@ -1108,40 +1160,12 @@ document.querySelector("#securityLock .securityBox")?.addEventListener("click", 
 </div>
 
 <nav class="bottom">
-  <button id="nh" class="ay" onclick="goHome()">
-    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3">
-      <path d="M7 22 24 8l17 14v19H7z"/><path d="M18 41V28h12v14"/>
-    </svg>Inicio
-  </button>
-
-  <button id="nb" onclick="openForm('Compra')">
-    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3">
-      <circle cx="19" cy="40" r="2"/><circle cx="37" cy="40" r="2"/>
-      <path d="M4 7h6l4 24h25l5-18H12"/>
-    </svg>Compras
-  </button>
-
-  <button id="ns" onclick="openFacturacionPage()">
-    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3">
-      <path d="M12 4h20l9 9v31H12z"/>
-      <path d="M32 4v10h9M19 24h15M19 31h15"/>
-    </svg>Facturación
-  </button>
-
-  <button id="nr" onclick="openSummary()">
-    <svg viewBox="0 0 48 48" fill="currentColor">
-      <rect x="5" y="25" width="8" height="18" rx="2"/>
-      <rect x="19" y="14" width="8" height="29" rx="2"/>
-      <rect x="33" y="4" width="8" height="39" rx="2"/>
-    </svg>Resumen
-  </button>
-
-  <button id="ng" onclick="openSettings()">
-    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3">
-      <path d="M19.8 5.7h8.4l1.2 5.2a14.7 14.7 0 0 1 3.2 1.9l5-1.5 4.2 7.3-3.9 3.7c.2 1.2.3 2.1.3 3.2s-.1 2-.3 3.2l3.9 3.7-4.2 7.3-5-1.5a14.7 14.7 0 0 1-3.2 1.9L28.2 42h-8.4l-1.2-5.2a14.7 14.7 0 0 1-3.2-1.9l-5 1.5-4.2-7.3 3.9-3.7A15 15 0 0 1 9.8 24c0-1.1.1-2 .3-3.2l-3.9-3.7 4.2-7.3 5 1.5a14.7 14.7 0 0 1 3.2-1.9z"/>
-      <circle cx="24" cy="24" r="6.2"/>
-    </svg>Ajustes
-  </button>
+  <button id="nh" class="ay" onclick="goHome()">🏠<span>Inicio</span></button>
+  <button id="nb" onclick="openForm('Compra')">🛒<span>Compras</span></button>
+  <button id="ns" onclick="openFacturacionPage()">🧾<span>Fact.</span></button>
+  <button id="na" onclick="openAgenda()">📅<span>Agenda</span></button>
+  <button id="ni" onclick="openInventory()">📦<span>Stock</span></button>
+  <button id="ng" onclick="openSettings()">⚙️<span>Ajustes</span></button>
 </nav>
 
 </div>
@@ -1171,7 +1195,7 @@ function calc(total,iva){
 }
 
 function only(id){
-  ["home","formPage","summaryPage","recordsPage","settingsPage","articleSearchPage"].forEach(x=>{
+  ["home","formPage","summaryPage","recordsPage","settingsPage","agendaPage","inventoryPage"].forEach(x=>{
     $(x).classList.toggle("hidden",x!==id);
   });
 }
@@ -1181,8 +1205,10 @@ function nav(x){
   if(x==="home") $("nh").classList.add("ay");
   if(x==="buy") $("nb").classList.add("ay");
   if(x==="sale") $("ns").classList.add("ap");
-  if(x==="sum") $("nr").classList.add("ay");
-  if(x==="settings") $("ng").classList.add("ay");
+  if(x==="sum") $("nr")?.classList.add("ay");
+  if(x==="agenda") $("na")?.classList.add("ay");
+  if(x==="inventory") $("ni")?.classList.add("ay");
+  if(x==="settings") $("ng")?.classList.add("ay");
 }
 
 function goHome(){
@@ -1237,7 +1263,6 @@ function openSettings(){
   renderSupplierPanel();
   loadSuppliersFromGoogle(false);
   loadInvoiceSettings(false);
-  loadComparatorStatus(false);
 }
 
 function saveSetting(key,value){
@@ -1585,76 +1610,6 @@ async function saveCurrentClient(){
   }catch(e){ showToastMessage("Error",e.message||"No se pudo guardar el cliente."); }
 }
 
-function loadSimpleSavedClient(index){
-  const c=savedClients[Number(index)];
-  if(!c || !$('tercero')) return;
-  $('tercero').value=c.nombre||'';
-}
-
-function refreshSimpleClientSelect(){
-  const sel=$('simpleSavedClient');
-  if(!sel) return;
-  const current=sel.value;
-  sel.innerHTML='<option value="">Seleccionar cliente guardado...</option>'+savedClients.map((c,i)=>`<option value="${i}">${esc(c.nombre||'')}${c.cif?' · '+esc(c.cif):''}</option>`).join('');
-  if(current && savedClients[current]) sel.value=current;
-}
-
-async function loadComparatorStatus(showError=false){
-  const el=$("comparatorStatusText");
-  if(!el) return;
-  try{const data=await callAction({accion:"estadoComparador"});el.textContent=data.configurado?`Estado: configurado ✓${data.zona?" · "+data.zona:""}`:"Estado: falta configurar la API Key";}catch(e){el.textContent="Estado: no disponible";if(showError)showToastMessage("Comparador",e.message||"No se pudo comprobar el estado.");}
-}
-function openComparatorSettings(){
-  $("comparatorSettingsModal")?.classList.remove("hidden");
-  $("brightDataApiKey").value="";
-  $("brightDataZone").value="serp_api1";
-  $("comparatorMsg").textContent="";
-  loadComparatorStatus(false);
-}
-function closeComparatorSettings(){
-  $("comparatorSettingsModal")?.classList.add("hidden");
-  const msg=$("comparatorMsg");if(msg){msg.className="msg";msg.textContent="";}
-}
-async function saveComparatorKey(){
-  const key=$("brightDataApiKey")?.value.trim()||"";const zone=$("brightDataZone")?.value.trim()||"serp_api1";const msg=$("comparatorMsg");
-  if(!key){msg.className="msg err";msg.textContent="Pega una API Key válida.";return;}
-  msg.className="msg";msg.textContent="Guardando...";
-  try{const data=await callAction({accion:"guardarComparadorClave",apiKey:key,zone});msg.className="msg ok";msg.textContent=`Clave guardada ✓ · Zona ${data.zona||zone}`;$("comparatorStatusText").textContent="Estado: configurado ✓";}catch(e){msg.className="msg err";msg.textContent=e.message||"No se pudo guardar la clave.";}
-}
-async function testComparatorKey(){
-  const msg=$("comparatorMsg");msg.className="msg";msg.textContent="Probando búsqueda...";
-  try{const data=await callAction({accion:"buscarArticulos",q:"DAS Vantec 215"});msg.className="msg ok";msg.textContent=`Conexión correcta. ${Array.isArray(data.articulos)?data.articulos.length:0} resultados.`;}catch(e){msg.className="msg err";msg.textContent=e.message||"No se pudo conectar con el comparador.";}
-}
-function openArticleSearch(){
-  only('articleSearchPage');nav('home');
-  const input=$("articleSearchInput");if(input){input.value='';setTimeout(()=>input.focus(),50);}
-  const out=$("articleSearchResults");if(out)out.innerHTML='<div class="articleEmpty">Escribe un producto y pulsa «Buscar precios». Los resultados aparecerán dentro de la aplicación.</div>';
-}
-function formatOnlinePrice(price){
-  const n=Number(price);return Number.isFinite(n)?new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n):String(price||'');
-}
-function escAttr(v){return String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function renderOnlineArticles(items,q){
-  const out=$("articleSearchResults");if(!out)return;
-  if(!Array.isArray(items)||!items.length){out.innerHTML='<div class="articleEmpty">No se han encontrado ofertas con precio para esta búsqueda.</div>';return;}
-  const sorted=[...items].sort((a,b)=>(Number(a.precio)||Infinity)-(Number(b.precio)||Infinity));
-  const minPrice=Number(sorted[0]?.precio)||0;
-  out.innerHTML=sorted.map(item=>{
-    const image=item.imagen?`<img class="articleThumb" src="${escAttr(item.imagen)}" alt="">`:'<div class="articleThumb"></div>';
-    const rating=item.valoracion?`⭐ ${esc(String(item.valoracion))}${item.reseñas?` · ${esc(String(item.reseñas))} reseñas`:''}`:'';
-    const meta=[item.envio||'',rating].filter(Boolean).map(esc).join(' · ');
-    const offer=item.enlace?`<a class="articleOfferBtn" href="${escAttr(item.enlace)}" target="_blank" rel="noopener">VER OFERTA ↗</a>`:'';
-    const best=(Number(item.precio)||0)===minPrice;
-    return `<div class="articleResultCard">${image}<div>${best?'<span class="articleBest">MÁS BARATO DE LOS RESULTADOS</span>':''}<div class="articleResultTitle">${esc(item.titulo||'Producto')}</div><div class="articleResultSource">${esc(item.tienda||'Tienda online')}</div><div class="articleResultMeta">${meta||'Oferta online'}</div></div><div><div class="articleResultPrice">${formatOnlinePrice(item.precio)}</div>${offer}</div></div>`;
-  }).join('');
-}
-async function searchOnlineArticles(){
-  const q=$("articleSearchInput")?.value.trim()||"";const out=$("articleSearchResults");const btn=$("articleSearchBtn");if(!out)return;
-  if(q.length<2){out.innerHTML='<div class="articleEmpty">Escribe al menos 2 caracteres.</div>';return;}
-  if(btn){btn.disabled=true;btn.textContent='⏳ BUSCANDO...';}out.innerHTML='<div class="articleLoading">Buscando precios online…</div>';
-  try{const data=await callAction({accion:"buscarArticulos",q});if(data?.configRequired){out.innerHTML='<div class="articleEmpty">Primero configura el comparador en Ajustes → Configurar comparador.</div>';return;}renderOnlineArticles(data.articulos||[],q);}catch(e){out.innerHTML=`<div class="articleEmpty">${esc(e.message||'No se pudo realizar la búsqueda.')}</div>`;}finally{if(btn){btn.disabled=false;btn.textContent='🔎 BUSCAR PRECIOS';}}
-}
-
 function openSimpleClientModal(){
   const name=$("tercero")?.value.trim()||"";
   const modal=$("clientSaveModal");
@@ -1679,7 +1634,6 @@ async function saveSimpleClient(){
     const data=await callAction({accion:"guardarCliente",cliente:JSON.stringify(client)});
     savedClients=Array.isArray(data.clientes)?data.clientes:savedClients;
     localStorage.setItem("cf_clients",JSON.stringify(savedClients));
-    refreshSimpleClientSelect();
     if($("tercero"))$("tercero").value=client.nombre;
     msg.className="msg ok";msg.textContent="Cliente guardado ✓";
     setTimeout(closeSimpleClientModal,500);
@@ -1887,10 +1841,6 @@ function openForm(tipo){
     <div class="form">
       <div class="field">
         <label>${c?"Tienda / Proveedor":"Cliente"}</label>
-        ${!c?`<div class="two" style="margin-bottom:8px">
-          <div class="field"><label>Cliente guardado</label><select id="simpleSavedClient" class="select" onchange="loadSimpleSavedClient(this.value)"><option value="">Seleccionar cliente guardado...</option></select></div>
-          <div class="field" style="display:flex;align-items:end"><button class="invoiceAdd" type="button" onclick="openSimpleClientModal()">💾 GUARDAR CLIENTE</button></div>
-        </div>`:""}
         ${c?`<div class="supplierTabs">
           <button id="thirdPartyStoreBtn" class="supplierTab active" type="button" onclick="setFormThirdPartyCategory('tiendas')">🏪 TIENDA</button>
           <button id="thirdPartyProviderBtn" class="supplierTab" type="button" onclick="setFormThirdPartyCategory('proveedores')">👤 PROVEEDOR</button>
@@ -1899,7 +1849,7 @@ function openForm(tipo){
           <input id="tercero" class="input" placeholder="${c?"Ej. MadridHifi":"Ej. Ayuntamiento, empresa, particular"}" autocomplete="off">
           ${c?'<div id="thirdPartyAutocomplete" class="autocompleteMenu"></div>':""}
         </div>
-        ${c?'<button class="invoiceAdd" type="button" style="margin-top:8px" onclick="openSimpleClientModal()">💾 GUARDAR DATOS DEL CLIENTE</button>':""}
+        <button class="invoiceAdd" type="button" style="margin-top:8px" onclick="openSimpleClientModal()">💾 GUARDAR DATOS DEL CLIENTE</button>
       </div>
 
       <div class="field">
@@ -1948,8 +1898,6 @@ function openForm(tipo){
     input.addEventListener("input",renderAutocomplete);
     input.addEventListener("focus",renderAutocomplete);
     input.addEventListener("blur",()=>setTimeout(hideAutocomplete,150));
-  }else{
-    loadClients(false).then(()=>refreshSimpleClientSelect());
   }
 }
 
@@ -2265,6 +2213,172 @@ async function deleteCurrentRecord(){
     m.className="msg err";
     m.textContent=e.message||"No se ha podido eliminar el registro.";
   }
+}
+
+
+/* =========================================================
+   AGENDA
+   ========================================================= */
+let agendaEvents=[];
+let agendaMonthCursor=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+let agendaEditingId=null;
+
+function mapsLink(location){
+  const q=String(location||"").trim();
+  return q ? "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(q) : "";
+}
+function formatAgendaDate(dateStr){
+  if(!dateStr) return "";
+  const parts=String(dateStr).slice(0,10).split("-");
+  if(parts.length!==3) return dateStr;
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+function agendaDayKey(y,m,d){return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;}
+function agendaMonthLabel(date){
+  return date.toLocaleDateString("es-ES",{month:"long",year:"numeric"}).replace(/^./,c=>c.toUpperCase());
+}
+function openAgenda(){
+  only("agendaPage");
+  nav("agenda");
+  agendaMonthCursor=new Date(agendaMonthCursor.getFullYear(),agendaMonthCursor.getMonth(),1);
+  renderAgenda();
+  loadAgenda(false);
+}
+function agendaGoToday(){
+  const now=new Date();
+  agendaMonthCursor=new Date(now.getFullYear(),now.getMonth(),1);
+  renderAgenda();
+}
+function changeAgendaMonth(delta){
+  agendaMonthCursor=new Date(agendaMonthCursor.getFullYear(),agendaMonthCursor.getMonth()+delta,1);
+  renderAgenda();
+}
+function renderAgenda(){
+  const label=$("agendaMonthLabel");
+  const grid=$("agendaGrid");
+  if(!label||!grid)return;
+  label.textContent=agendaMonthLabel(agendaMonthCursor);
+  const y=agendaMonthCursor.getFullYear(), m=agendaMonthCursor.getMonth();
+  const first=new Date(y,m,1);
+  const last=new Date(y,m+1,0);
+  let start=(first.getDay()+6)%7;
+  const days=last.getDate();
+  const prevLast=new Date(y,m,0).getDate();
+  const cells=[];
+  for(let i=0;i<42;i++){
+    const dayNum=i-start+1;
+    const inMonth=dayNum>=1&&dayNum<=days;
+    const realDate=new Date(y,m,dayNum);
+    if(dayNum<1) realDate.setDate(dayNum);
+    if(dayNum>days) realDate.setDate(dayNum);
+    const key=agendaDayKey(realDate.getFullYear(),realDate.getMonth(),realDate.getDate());
+    const evs=agendaEvents.filter(e=>String(e.fecha||"").slice(0,10)===key).sort((a,b)=>String(a.horaInicio||"").localeCompare(String(b.horaInicio||"")));
+    const todayKey=agendaDayKey(new Date().getFullYear(),new Date().getMonth(),new Date().getDate());
+    const cls=(inMonth?"":" muted")+(key===todayKey?" today":"");
+    const chips=evs.slice(0,3).map(e=>`<span class="calEvent" data-event-id="${esc(e.id)}">${esc((e.horaInicio?e.horaInicio+" ":"")+e.evento)}</span>`).join("")+(evs.length>3?`<span class="calEvent more">+${evs.length-3} más</span>`:"");
+    cells.push(`<div class="calDay${cls}" data-date="${key}"><span class="calNum">${realDate.getDate()}</span>${chips}</div>`);
+  }
+  grid.innerHTML=cells.join("");
+  grid.querySelectorAll(".calDay").forEach(cell=>cell.addEventListener("click",e=>{
+    const ev=e.target.closest("[data-event-id]");
+    if(ev){openAgendaEventModal(ev.dataset.eventId);return;}
+    openAgendaEventModal(null,cell.dataset.date);
+  }));
+  renderAgendaUpcoming();
+}
+function renderAgendaUpcoming(){
+  const wrap=$("agendaUpcoming"), count=$("agendaCount");
+  if(!wrap)return;
+  const today=agendaDayKey(new Date().getFullYear(),new Date().getMonth(),new Date().getDate());
+  const arr=agendaEvents.slice().sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha))||String(a.horaInicio||"").localeCompare(String(b.horaInicio||""))).filter(e=>String(e.fecha).slice(0,10)>=today);
+  count.textContent=`${arr.length} evento${arr.length===1?"":"s"}`;
+  wrap.innerHTML=arr.length?arr.slice(0,12).map(e=>{
+    const map=mapsLink(e.ubicacion);
+    return `<div class="agendaCard"><div class="agendaCardTop"><div><div class="agendaCardTitle">${esc(e.evento)}</div><div class="agendaCardMeta">${formatAgendaDate(e.fecha)} · ${esc(e.horaInicio||"")}${e.horaFin?"–"+esc(e.horaFin):""}${e.ubicacion?" · "+esc(e.ubicacion):""}</div></div><div class="agendaCardTime">${esc(e.cliente||"")}</div></div>${e.llevar?`<div class="agendaCardMeta"><b>📦 Llevar:</b> ${esc(e.llevar)}</div>`:""}${e.comentarios?`<div class="agendaCardMeta"><b>📝</b> ${esc(e.comentarios)}</div>`:""}<div class="agendaCardActions"><button type="button" onclick="openAgendaEventModal('${esc(e.id)}')">EDITAR</button>${map?`<a href="${map}" target="_blank" rel="noopener">📍 MAPA</a>`:""}</div></div>`;
+  }).join(""): '<div style="padding:20px;text-align:center;color:#66717b">No hay próximos eventos.</div>';
+}
+async function loadAgenda(showError=false){
+  try{const data=await callAction({accion:"listarAgenda"});agendaEvents=Array.isArray(data.eventos)?data.eventos:[];localStorage.setItem("cf_agenda",JSON.stringify(agendaEvents));renderAgenda();}
+  catch(e){try{agendaEvents=JSON.parse(localStorage.getItem("cf_agenda")||"[]")}catch(_){agendaEvents=[]}renderAgenda();if(showError)showToastMessage("Sin conexión","No se pudo cargar la agenda.");}
+}
+function openAgendaEventModal(id=null,dateStr=null){
+  agendaEditingId=id||null;
+  const modal=$("agendaEventModal"), title=$("agendaModalTitle"), del=$("agendaDeleteBtn");
+  if(!modal)return;
+  let e=id?agendaEvents.find(x=>String(x.id)===String(id)):null;
+  title.textContent=e?"Editar evento":"Nuevo evento";
+  $("agendaEventName").value=e?.evento||"";
+  $("agendaEventDate").value=(e?.fecha||dateStr||agendaDayKey(new Date().getFullYear(),new Date().getMonth(),new Date().getDate())).slice(0,10);
+  $("agendaEventStart").value=e?.horaInicio||"";
+  $("agendaEventEnd").value=e?.horaFin||"";
+  $("agendaEventClient").value=e?.cliente||"";
+  $("agendaEventLocation").value=e?.ubicacion||"";
+  $("agendaEventBring").value=e?.llevar||"";
+  $("agendaEventComments").value=e?.comentarios||"";
+  $("agendaMsg").textContent="";
+  $("agendaMsg").className="msg";
+  del.style.display=e?"block":"none";
+  updateAgendaMapHint();
+  $("agendaEventLocation").oninput=updateAgendaMapHint;
+  modal.classList.remove("hidden");
+}
+function updateAgendaMapHint(){
+  const el=$("agendaMapPreview"); if(!el)return;
+  const loc=$("agendaEventLocation")?.value.trim()||"";
+  el.innerHTML=loc?`📍 <a href="${mapsLink(loc)}" target="_blank" rel="noopener" style="color:var(--yellow);font-weight:800;text-decoration:none">Abrir esta ubicación en Google Maps</a>`:"Añade una ubicación para disponer del acceso directo al mapa.";
+}
+function closeAgendaEventModal(){$("agendaEventModal")?.classList.add("hidden");agendaEditingId=null;}
+async function saveAgendaEvent(){
+  const msg=$("agendaMsg");
+  const obj={id:agendaEditingId||("EV-"+Date.now()+"-"+Math.floor(Math.random()*10000)),evento:$("agendaEventName").value.trim(),fecha:$("agendaEventDate").value,horaInicio:$("agendaEventStart").value,horaFin:$("agendaEventEnd").value,cliente:$("agendaEventClient").value.trim(),ubicacion:$("agendaEventLocation").value.trim(),llevar:$("agendaEventBring").value.trim(),comentarios:$("agendaEventComments").value.trim()};
+  if(!obj.evento||!obj.fecha){msg.className="msg err";msg.textContent="Indica al menos el evento y la fecha.";return;}
+  msg.className="msg";msg.textContent="Guardando...";
+  try{await callAction({accion:"guardarEvento",evento:JSON.stringify(obj)});await loadAgenda(false);msg.className="msg ok";msg.textContent="Evento guardado ✓";setTimeout(closeAgendaEventModal,400);}catch(e){msg.className="msg err";msg.textContent=e.message||"No se pudo guardar el evento.";}
+}
+async function deleteAgendaEvent(){
+  if(!agendaEditingId)return;
+  if(!confirm("¿Eliminar este evento?"))return;
+  const msg=$("agendaMsg");msg.className="msg";msg.textContent="Eliminando...";
+  try{await callAction({accion:"eliminarEvento",id:agendaEditingId});await loadAgenda(false);closeAgendaEventModal();}catch(e){msg.className="msg err";msg.textContent=e.message||"No se pudo eliminar el evento.";}
+}
+
+/* =========================================================
+   INVENTARIO
+   ========================================================= */
+let inventoryItems=[];
+let inventoryEditingId=null;
+function openInventory(){only("inventoryPage");nav("inventory");renderInventory();loadInventory(false);}
+async function loadInventory(showError=false){
+  try{const data=await callAction({accion:"listarInventario"});inventoryItems=Array.isArray(data.items)?data.items:[];localStorage.setItem("cf_inventory",JSON.stringify(inventoryItems));renderInventory();}
+  catch(e){try{inventoryItems=JSON.parse(localStorage.getItem("cf_inventory")||"[]")}catch(_){inventoryItems=[]}renderInventory();if(showError)showToastMessage("Sin conexión","No se pudo cargar el inventario.");}
+}
+function renderInventory(){
+  const wrap=$("inventoryList"); if(!wrap)return;
+  const q=($("inventorySearch")?.value||"").trim().toLowerCase();
+  const arr=inventoryItems.filter(i=>(String(i.articulo)+" "+String(i.categoria)+" "+String(i.ubicacion)).toLowerCase().includes(q)).sort((a,b)=>String(a.articulo).localeCompare(String(b.articulo),"es",{sensitivity:"base"}));
+  $("inventoryCount").textContent=inventoryItems.length;
+  $("inventoryLowCount").textContent=inventoryItems.filter(i=>(Number(i.cantidad)||0) <= (Number(i.minimo)||0)).length;
+  wrap.innerHTML=arr.length?arr.map(i=>{
+    const qty=Number(i.cantidad)||0,min=Number(i.minimo)||0,low=qty<=min;
+    return `<div class="stockCard"><div class="stockHead"><div><div class="stockName">${esc(i.articulo)}</div><div class="stockMeta">${esc(i.categoria||"Otros")} · ${esc(i.ubicacion||"Sin ubicación")} · ${esc(i.estado||"Disponible")}</div></div><div class="stockQty ${low?"low":"ok"}">${qty} <span style="font-size:9px;color:#9da7b0;font-weight:700">${esc(i.unidad||"unidades")}</span></div></div>${i.notas?`<div class="stockMeta" style="margin-top:8px">${esc(i.notas)}</div>`:""}<div class="stockActions"><button class="minus" type="button" onclick="adjustInventory('${esc(i.id)}',-1)">− 1</button><button class="plus" type="button" onclick="adjustInventory('${esc(i.id)}',1)">＋ 1</button><button class="edit" type="button" onclick="openInventoryModal('${esc(i.id)}')">EDITAR</button></div></div>`;
+  }).join(""):'<div style="padding:22px;text-align:center;color:#66717b">No hay material registrado.</div>';
+}
+function openInventoryModal(id=null){
+  inventoryEditingId=id||null;const e=id?inventoryItems.find(x=>String(x.id)===String(id)):null;
+  $("inventoryModalTitle").textContent=e?"Editar material":"Nuevo material";
+  $("invItemName").value=e?.articulo||"";$("invItemCategory").value=e?.categoria||"Otros";$("invItemUnit").value=e?.unidad||"unidades";$("invItemQty").value=Number(e?.cantidad ?? 1);$("invItemMin").value=Number(e?.minimo ?? 0);$("invItemLocation").value=e?.ubicacion||"";$("invItemStatus").value=e?.estado||"Disponible";$("invItemNotes").value=e?.notas||"";$("inventoryMsg").textContent="";$("inventoryMsg").className="msg";$("inventoryModal").classList.remove("hidden");
+}
+function closeInventoryModal(){$("inventoryModal")?.classList.add("hidden");inventoryEditingId=null;}
+async function saveInventoryItem(){
+  const msg=$("inventoryMsg");const obj={id:inventoryEditingId||("INV-"+Date.now()+"-"+Math.floor(Math.random()*10000)),articulo:$("invItemName").value.trim(),categoria:$("invItemCategory").value,unidad:$("invItemUnit").value,cantidad:Math.max(0,Number($("invItemQty").value)||0),minimo:Math.max(0,Number($("invItemMin").value)||0),ubicacion:$("invItemLocation").value.trim(),estado:$("invItemStatus").value,notas:$("invItemNotes").value.trim()};
+  if(!obj.articulo){msg.className="msg err";msg.textContent="Indica el nombre del material.";return;}
+  msg.className="msg";msg.textContent="Guardando...";
+  try{await callAction({accion:"guardarInventario",item:JSON.stringify(obj)});await loadInventory(false);msg.className="msg ok";msg.textContent="Material guardado ✓";setTimeout(closeInventoryModal,350);}catch(e){msg.className="msg err";msg.textContent=e.message||"No se pudo guardar el material.";}
+}
+async function adjustInventory(id,delta){
+  const e=inventoryItems.find(x=>String(x.id)===String(id));if(!e)return;
+  e={...e,cantidad:Math.max(0,(Number(e.cantidad)||0)+delta)};
+  try{await callAction({accion:"guardarInventario",item:JSON.stringify(e)});const idx=inventoryItems.findIndex(x=>String(x.id)===String(id));if(idx>=0)inventoryItems[idx]=e;renderInventory();}catch(err){showToastMessage("Error","No se pudo actualizar el stock.");}
 }
 
 function syncFromSheets(){
@@ -2922,24 +3036,51 @@ function securityStart(){
  * la ventana del PIN.
  */
 loadClients(false);
+loadInventory(false);
+loadAgenda(false);
 securityStart();
 
 </script>
 
 
 
-
-<div id="comparatorSettingsModal" class="modal hidden" onclick="if(event.target===this)closeComparatorSettings()">
+<div id="inventoryModal" class="modal hidden" onclick="if(event.target===this)closeInventoryModal()">
   <div class="modalCard">
-    <button class="modalClose" type="button" onclick="closeComparatorSettings()">×</button>
-    <div class="modalTitle">🔎 Configurar comparador</div>
-    <div class="settingsHint" style="margin-bottom:14px">Necesitas una API Key de Bright Data. La clave y la zona se guardan en Google Apps Script, no en GitHub ni en la aplicación pública.</div>
-    <div class="field"><label>API KEY DE BRIGHT DATA</label><input id="brightDataApiKey" class="input" type="password" autocomplete="off" placeholder="Pega aquí tu API Key"></div>
-    <div class="field"><label>ZONA DE BRIGHT DATA</label><input id="brightDataZone" class="input" type="text" value="serp_api1" autocomplete="off" placeholder="Ej. serp_api1"></div>
-    <button class="save p settingsSave" type="button" onclick="saveComparatorKey()">GUARDAR CLAVE</button>
-    <button class="resetSettings" type="button" onclick="testComparatorKey()">PROBAR CONEXIÓN</button>
-    <div id="comparatorMsg" class="msg"></div>
-    <div class="settingsHint" style="margin-top:10px">Usa la zona que aparece en tu panel de Bright Data. Normalmente es <b>serp_api1</b>.</div>
+    <button class="modalClose" type="button" onclick="closeInventoryModal()">×</button>
+    <div class="modalTitle">📦 <span id="inventoryModalTitle">Nuevo material</span></div>
+    <div class="inventoryModalGrid">
+      <div class="field full"><label>Artículo / Material</label><input id="invItemName" class="input" placeholder="Ej. DAS Event 28A"></div>
+      <div class="field"><label>Categoría</label><select id="invItemCategory" class="select"><option>Audio</option><option>Iluminación</option><option>Pantallas LED</option><option>Estructuras</option><option>Cableado</option><option>Otros</option></select></div>
+      <div class="field"><label>Unidad</label><select id="invItemUnit" class="select"><option>unidades</option><option>metros</option><option>pares</option><option>juegos</option><option>cajas</option></select></div>
+      <div class="field"><label>Cantidad</label><input id="invItemQty" class="input" type="number" min="0" step="1" inputmode="numeric" value="1"></div>
+      <div class="field"><label>Stock mínimo</label><input id="invItemMin" class="input" type="number" min="0" step="1" inputmode="numeric" value="0"></div>
+      <div class="field"><label>Ubicación</label><input id="invItemLocation" class="input" placeholder="Ej. Almacén 1"></div>
+      <div class="field"><label>Estado</label><select id="invItemStatus" class="select"><option>Disponible</option><option>En reparación</option><option>No disponible</option></select></div>
+      <div class="field full"><label>Notas</label><textarea id="invItemNotes" class="textarea" placeholder="Opcional"></textarea></div>
+    </div>
+    <button class="save y" type="button" onclick="saveInventoryItem()">GUARDAR MATERIAL</button>
+    <div id="inventoryMsg" class="msg"></div>
+  </div>
+</div>
+
+<div id="agendaEventModal" class="modal hidden" onclick="if(event.target===this)closeAgendaEventModal()">
+  <div class="modalCard">
+    <button class="modalClose" type="button" onclick="closeAgendaEventModal()">×</button>
+    <div class="modalTitle">📅 <span id="agendaModalTitle">Nuevo evento</span></div>
+    <div class="agendaFormGrid">
+      <div class="field full"><label>Evento</label><input id="agendaEventName" class="input" placeholder="Ej. Fiesta de verano"></div>
+      <div class="field"><label>Fecha</label><input id="agendaEventDate" class="input" type="date"></div>
+      <div class="field"><label>Hora de inicio</label><input id="agendaEventStart" class="input" type="time"></div>
+      <div class="field"><label>Hora de fin</label><input id="agendaEventEnd" class="input" type="time"></div>
+      <div class="field"><label>Cliente / contacto</label><input id="agendaEventClient" class="input" placeholder="Opcional"></div>
+      <div class="field full"><label>Ubicación</label><input id="agendaEventLocation" class="input" placeholder="Ej. Piscina municipal, Castillejo de Iniesta"></div>
+      <div class="field full"><label>Qué tengo que llevar</label><textarea id="agendaEventBring" class="textarea" placeholder="Ej. Pantalla 6x2, 2 subs, 4 cabezas, cableado..."></textarea></div>
+      <div class="field full"><label>Comentarios</label><textarea id="agendaEventComments" class="textarea" placeholder="Montaje, horario de llegada, contacto, instrucciones..."></textarea></div>
+    </div>
+    <div id="agendaMapPreview" class="settingsHint" style="margin:4px 0 10px"></div>
+    <button class="save p" type="button" onclick="saveAgendaEvent()">GUARDAR EVENTO</button>
+    <button class="deleteBtn" id="agendaDeleteBtn" type="button" style="margin-top:8px;display:none" onclick="deleteAgendaEvent()">ELIMINAR EVENTO</button>
+    <div id="agendaMsg" class="msg"></div>
   </div>
 </div>
 
@@ -2994,7 +3135,8 @@ securityStart();
     <div class="guideStep"><div class="guideNum">4</div><div><h4>Revisar documentos pendientes</h4><p>La aplicación cuenta las compras y facturas emitidas que todavía no tienen un archivo adjunto y permite verlas directamente.</p></div></div>
     <div class="guideStep"><div class="guideNum">5</div><div><h4>Enviar documentación al gestor</h4><p>Selecciona compras, facturas emitidas o ambas, elige el período y pulsa Enviar documentación. Los archivos adjuntos se envían por correo.</p></div></div>
     <div class="guideStep"><div class="guideNum">6</div><div><h4>Ajustes</h4><p>Puedes configurar tus datos de facturación, cambiar el fondo, los colores de Compras y Facturación y guardar la hora que prefieres para el recordatorio diario.</p></div></div>
-    <div class="guideStep"><div class="guideNum">7</div><div><h4>Seguridad</h4><p>La aplicación se protege mediante código de 4 dígitos y autenticación del dispositivo cuando está disponible.</p></div></div>
+    <div class="guideStep"><div class="guideNum">7</div><div><h4>Agenda e inventario</h4><p>Agenda guarda eventos por fecha y hora, ubicación, qué llevar y comentarios. Inventario permite controlar cantidades con botones +1 y −1, stock mínimo y ubicación del material.</p></div></div>
+    <div class="guideStep"><div class="guideNum">8</div><div><h4>Seguridad</h4><p>La aplicación se protege mediante código de 4 dígitos y autenticación del dispositivo cuando está disponible.</p></div></div>
     <button class="modalAction" type="button" onclick="closeGuide()">CERRAR</button>
   </div>
 </div>
