@@ -211,6 +211,45 @@ button{cursor:pointer}
 }
 .toast.y button{background:var(--yellow)}
 .toast.p button{background:var(--purple)}
+
+.invoiceForm{padding:0 16px}
+.invoiceSection{background:#111920;border:1px solid #3b4b57;border-radius:12px;padding:12px;margin-bottom:12px}
+.invoiceCreateBox{margin:14px 0 24px;padding:14px;border:1px solid #3b4b57;border-radius:12px;background:#111920}
+.invoiceCreateText{margin-bottom:11px}
+.invoiceCreateText strong{display:block;font-size:14px;margin-bottom:4px}
+.invoiceCreateText span{display:block;color:var(--muted);font-size:12px;line-height:1.4}
+.invoiceSection h3{margin:0 0 10px;font-size:13px}
+.invoiceGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.invoiceGrid .full{grid-column:1/-1}
+.invoiceMeta{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.invoiceMeta .metaBox{background:#111920;border:1px solid #3b4b57;border-radius:10px;padding:10px}
+.invoiceMeta small{display:block;font-size:8px;color:#adb7bf}
+.invoiceMeta strong{display:block;font-size:13px;margin-top:4px}
+.invoiceLineHead,.invoiceLine{display:grid;grid-template-columns:minmax(0,1fr) 62px 92px 92px 38px;gap:6px;align-items:center}
+.invoiceLineHead{font-size:8px;color:#adb7bf;padding:0 4px 5px}
+.invoiceLine{margin-bottom:7px}
+.invoiceLine .input{height:42px;padding:0 9px;font-size:12px}
+.invoiceLineTotal{font-size:11px;font-weight:800;text-align:right;white-space:nowrap}
+.invoiceRemove{height:42px;border:1px solid #53616d;background:#1a232b;color:#fff;border-radius:9px;font-size:17px}
+.invoiceAdd{width:100%;height:42px;border:1px dashed #667681;background:transparent;color:#fff;border-radius:9px;font-weight:800}
+.invoiceTotals{margin-top:11px;border-top:1px solid #3b4b57;padding-top:10px}
+.invoiceTotalRow{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:11px}
+.invoiceTotalRow strong{font-size:13px}
+.invoiceTotalRow.final{font-size:14px;font-weight:900;border-top:1px solid #53616d;margin-top:4px;padding-top:9px}
+.invoiceTotalRow.final strong{font-size:18px}
+.settingsInvoiceGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.settingsInvoiceGrid .full{grid-column:1/-1}
+.settingsSave{margin-top:8px}
+.invoiceHint{font-size:9px;color:#9da7b0;margin:-4px 0 10px}
+@media(max-width:430px){
+  .invoiceGrid,.settingsInvoiceGrid{grid-template-columns:1fr}
+  .invoiceGrid .full,.settingsInvoiceGrid .full{grid-column:auto}
+  .invoiceLineHead{display:none}
+  .invoiceLine{grid-template-columns:minmax(0,1fr) 58px 82px 82px 38px}
+  .invoiceLine .input{font-size:11px}
+  .invoiceLineTotal{font-size:10px}
+}
+
 .hidden{display:none!important}
 
 
@@ -887,6 +926,15 @@ document.querySelector("#securityLock .securityBox")?.addEventListener("click", 
       </div>
 
       <div class="settingsGroup">
+        <div class="settingsTitle">🧾 DATOS DE FACTURACIÓN</div>
+        <div class="settingsHint">Configura los datos que aparecerán como emisor en tus facturas. Se guardan en Google Sheets para poder utilizarlos también desde el iPhone.</div>
+        <button class="guideBtn" type="button" onclick="openInvoiceSettings()">
+          <span class="guideIcon">🧾</span>
+          <span>EDITAR MIS DATOS DE FACTURACIÓN</span>
+        </button>
+      </div>
+
+      <div class="settingsGroup">
         <div class="settingsTitle">ℹ️ INFORMACIÓN</div>
         <div class="guideGrid">
           <button class="guideBtn" type="button" onclick="openGuide()">
@@ -1004,7 +1052,7 @@ document.querySelector("#securityLock .securityBox")?.addEventListener("click", 
     </svg>Compras
   </button>
 
-  <button id="ns" onclick="openForm('Facturado')">
+  <button id="ns" onclick="openFacturacionPage()">
     <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3">
       <path d="M12 4h20l9 9v31H12z"/>
       <path d="M32 4v10h9M19 24h15M19 31h15"/>
@@ -1079,7 +1127,8 @@ const SETTINGS_KEYS={
   theme:"cf_theme",
   buyColor:"cf_buy_color",
   saleColor:"cf_sale_color",
-  notificationTime:"cf_notification_time"
+  notificationTime:"cf_notification_time",
+  invoiceConfig:"cf_invoice_config"
 };
 
 function applyAppSettings(){
@@ -1118,6 +1167,7 @@ function openSettings(){
   applyAppSettings();
   renderSupplierPanel();
   loadSuppliersFromGoogle(false);
+  loadInvoiceSettings(false);
 }
 
 function saveSetting(key,value){
@@ -1134,6 +1184,18 @@ function resetAppSettings(){
   showToastMessage("Ajustes restablecidos","Se han recuperado los valores originales.");
 }
 
+
+function openInvoiceSettings(){
+  const modal=$("invoiceSettingsModal");
+  if(modal) modal.classList.remove("hidden");
+  loadInvoiceSettings(false);
+}
+function closeInvoiceSettings(){
+  const modal=$("invoiceSettingsModal");
+  if(modal) modal.classList.add("hidden");
+  const msg=$("issuerMsg");
+  if(msg){ msg.className="msg"; msg.textContent=""; }
+}
 
 function openGuide(){
   const modal=$("guideModal");
@@ -1317,6 +1379,250 @@ function setFormThirdPartyCategory(category){
   $("thirdPartyStoreBtn")?.classList.toggle("active",formThirdPartyCategory==="tiendas");
   $("thirdPartyProviderBtn")?.classList.toggle("active",formThirdPartyCategory==="proveedores");
   hideAutocomplete();
+}
+
+
+const DEFAULT_INVOICE_CONFIG={
+  name:"",taxId:"",address:"",postalCode:"",city:"",province:"",phone:"",email:"",iban:""
+};
+let invoiceConfig={...DEFAULT_INVOICE_CONFIG};
+
+function getInvoiceConfig(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(SETTINGS_KEYS.invoiceConfig)||"{}");
+    return {...DEFAULT_INVOICE_CONFIG,...saved};
+  }catch(e){ return {...DEFAULT_INVOICE_CONFIG}; }
+}
+
+function applyInvoiceSettingsToForm(){
+  const map={
+    issuerName:"name",issuerTaxId:"taxId",issuerAddress:"address",issuerPostalCode:"postalCode",
+    issuerCity:"city",issuerProvince:"province",issuerPhone:"phone",issuerEmail:"email",issuerIban:"iban"
+  };
+  Object.entries(map).forEach(([id,key])=>{ if($(id)) $(id).value=invoiceConfig[key]||""; });
+}
+
+async function loadInvoiceSettings(showError=false){
+  invoiceConfig=getInvoiceConfig();
+  applyInvoiceSettingsToForm();
+  try{
+    const data=await callAction({accion:"obtenerConfiguracion"});
+    if(data&&data.configuracion){
+      invoiceConfig={...DEFAULT_INVOICE_CONFIG,...data.configuracion};
+      localStorage.setItem(SETTINGS_KEYS.invoiceConfig,JSON.stringify(invoiceConfig));
+      applyInvoiceSettingsToForm();
+    }
+  }catch(e){
+    if(showError) showToastMessage("Aviso","No se pudieron cargar los datos de facturación de Google Sheets.");
+  }
+}
+
+async function saveInvoiceSettings(){
+  const map={
+    issuerName:"name",issuerTaxId:"taxId",issuerAddress:"address",issuerPostalCode:"postalCode",
+    issuerCity:"city",issuerProvince:"province",issuerPhone:"phone",issuerEmail:"email",issuerIban:"iban"
+  };
+  const next={...DEFAULT_INVOICE_CONFIG};
+  Object.entries(map).forEach(([id,key])=>{ next[key]=($(id)?.value||"").trim(); });
+  if(!next.name || !next.taxId){
+    $("issuerMsg").className="msg err";
+    $("issuerMsg").textContent="Indica al menos el nombre/empresa y el CIF/NIF.";
+    return;
+  }
+  $("issuerMsg").className="msg";
+  $("issuerMsg").textContent="Guardando...";
+  try{
+    await callAction({accion:"guardarConfiguracion",configuracion:JSON.stringify(next)});
+    invoiceConfig=next;
+    localStorage.setItem(SETTINGS_KEYS.invoiceConfig,JSON.stringify(next));
+    $("issuerMsg").className="msg ok";
+    $("issuerMsg").textContent="Datos de facturación guardados ✓";
+    setTimeout(()=>closeInvoiceSettings(),500);
+  }catch(e){
+    $("issuerMsg").className="msg err";
+    $("issuerMsg").textContent=e.message||"No se pudieron guardar los datos.";
+  }
+}
+
+function openFacturacionPage(){
+  openForm("Facturado");
+  const body=$("formBody");
+  if(!body) return;
+  const wrap=document.createElement("div");
+  wrap.className="invoiceCreateBox";
+  wrap.innerHTML=`
+    <div class="invoiceCreateText">
+      <strong>¿Quieres crear una factura completa?</strong>
+      <span>Introduce los datos del cliente y varios conceptos y genera el importe final con IVA.</span>
+    </div>
+    <button class="save p" type="button" onclick="openInvoiceForm()">🧾 CREAR FACTURA</button>`;
+  body.appendChild(wrap);
+}
+
+function openInvoiceForm(){
+  only("formPage");
+  nav("sale");
+  invoiceConfig=getInvoiceConfig();
+  $("formHeader").dataset.tipo="FacturaCompleta";
+  $("formHeader").innerHTML=`
+    <button class="back" onclick="goHome()">‹</button>
+    <div class="headericon">
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3">
+        <path d="M12 4h20l9 9v31H12z"/><path d="M32 4v10h9M19 24h15M19 31h15"/>
+      </svg>
+    </div>
+    <div><h2>FACTURACIÓN</h2><p>Crea una factura con varios conceptos</p></div>`;
+
+  $("formBody").innerHTML=`
+    <div class="invoiceForm">
+      <div class="invoiceMeta">
+        <div class="metaBox"><small>NÚMERO DE FACTURA</small><strong>Automático al guardar</strong></div>
+        <div class="metaBox"><small>FECHA</small><strong>${new Date().toLocaleDateString("es-ES")}</strong></div>
+      </div>
+
+      <div class="invoiceSection">
+        <h3>👤 DATOS DEL CLIENTE</h3>
+        <div class="invoiceGrid">
+          <div class="field"><label>Nombre / Empresa</label><input id="invClientName" class="input" placeholder="Ej. Empresa cliente"></div>
+          <div class="field"><label>CIF / NIF</label><input id="invClientTaxId" class="input" placeholder="CIF / NIF"></div>
+          <div class="field full"><label>Dirección</label><input id="invClientAddress" class="input" placeholder="Calle, número..."></div>
+          <div class="field"><label>Código postal</label><input id="invClientPostalCode" class="input" inputmode="numeric" placeholder="Ej. 28001"></div>
+          <div class="field"><label>Ciudad</label><input id="invClientCity" class="input" placeholder="Ej. Madrid"></div>
+          <div class="field"><label>Provincia</label><input id="invClientProvince" class="input" placeholder="Ej. Madrid"></div>
+          <div class="field"><label>Teléfono</label><input id="invClientPhone" class="input" inputmode="tel" placeholder="Ej. 900 000 000"></div>
+          <div class="field"><label>Email</label><input id="invClientEmail" class="input" type="email" placeholder="cliente@empresa.com"></div>
+        </div>
+      </div>
+
+      <div class="invoiceSection">
+        <h3>🧾 CONCEPTOS</h3>
+        <div class="invoiceHint">Introduce el precio unitario sin IVA. El IVA se calcula al final sobre la base total.</div>
+        <div class="invoiceLineHead"><span>Concepto</span><span>Cant.</span><span>Precio</span><span>Total</span><span></span></div>
+        <div id="invoiceLines"></div>
+        <button class="invoiceAdd" type="button" onclick="addInvoiceLine()">＋ AÑADIR CONCEPTO</button>
+        <div class="invoiceTotals">
+          <div class="invoiceTotalRow"><span>Base imponible</span><strong id="invoiceBase">0,00 €</strong></div>
+          <div class="invoiceTotalRow"><span>IVA</span><strong id="invoiceIva">0,00 €</strong></div>
+          <div class="invoiceTotalRow final"><span>TOTAL FACTURA</span><strong id="invoiceTotal">0,00 €</strong></div>
+        </div>
+      </div>
+
+      <div class="invoiceSection">
+        <div class="two">
+          <div class="field"><label>IVA %</label><select id="invoiceIvaPct" class="select" onchange="recalcInvoice()"><option value="21">21%</option><option value="10">10%</option><option value="4">4%</option><option value="0">0%</option></select></div>
+          <div class="field"><label>Descuento % <span class="optional">(opcional)</span></label><input id="invoiceDiscount" class="input" type="number" min="0" max="100" step="0.01" value="0" oninput="recalcInvoice()"></div>
+        </div>
+        <div class="field"><label>Observaciones <span class="optional">(opcional)</span></label><textarea id="invoiceNotes" class="input" style="height:80px;padding-top:10px;resize:vertical" placeholder="Forma de pago, referencia, presupuesto..."></textarea></div>
+      </div>
+
+      <button id="invoiceSaveBtn" class="save p" type="button" onclick="saveInvoice()">ENVIAR Y GUARDAR FACTURA</button>
+      <div id="invoiceMsg" class="msg"></div>
+    </div>`;
+  addInvoiceLine();
+  recalcInvoice();
+}
+
+function addInvoiceLine(){
+  const wrap=$("invoiceLines");
+  if(!wrap)return;
+  const row=document.createElement("div");
+  row.className="invoiceLine";
+  row.innerHTML=`
+    <input class="input invoiceDesc" placeholder="Ej. Servicio de sonido">
+    <input class="input invoiceQty" type="number" min="0.01" step="0.01" value="1" inputmode="decimal">
+    <input class="input invoicePrice" type="number" min="0" step="0.01" value="0" inputmode="decimal">
+    <div class="invoiceLineTotal">0,00 €</div>
+    <button class="invoiceRemove" type="button" title="Eliminar concepto">×</button>`;
+  wrap.appendChild(row);
+  row.querySelectorAll("input").forEach(i=>i.addEventListener("input",recalcInvoice));
+  row.querySelector(".invoiceRemove").addEventListener("click",()=>{
+    const rows=wrap.querySelectorAll(".invoiceLine");
+    if(rows.length>1) row.remove(); else { row.querySelector(".invoiceDesc").value=""; row.querySelector(".invoiceQty").value="1"; row.querySelector(".invoicePrice").value="0"; }
+    recalcInvoice();
+  });
+  recalcInvoice();
+}
+
+function readInvoiceLines(){
+  return Array.from(document.querySelectorAll("#invoiceLines .invoiceLine")).map(row=>({
+    concepto:row.querySelector(".invoiceDesc")?.value.trim()||"",
+    cantidad:Number(row.querySelector(".invoiceQty")?.value)||0,
+    precio:Number(row.querySelector(".invoicePrice")?.value)||0
+  })).filter(x=>x.concepto || x.precio>0);
+}
+
+function recalcInvoice(){
+  const rows=Array.from(document.querySelectorAll("#invoiceLines .invoiceLine"));
+  let base=0;
+  rows.forEach(row=>{
+    const qty=Number(row.querySelector(".invoiceQty")?.value)||0;
+    const price=Number(row.querySelector(".invoicePrice")?.value)||0;
+    const line=qty*price;
+    base+=line;
+    const out=row.querySelector(".invoiceLineTotal");
+    if(out)out.textContent=euro(line);
+  });
+  const discount=Math.min(100,Math.max(0,Number($("invoiceDiscount")?.value)||0));
+  const baseConDescuento=base*(1-discount/100);
+  const ivaPct=Number($("invoiceIvaPct")?.value)||0;
+  const iva=baseConDescuento*ivaPct/100;
+  const total=baseConDescuento+iva;
+  if($("invoiceBase"))$("invoiceBase").textContent=euro(baseConDescuento);
+  if($("invoiceIva"))$("invoiceIva").textContent=euro(iva);
+  if($("invoiceTotal"))$("invoiceTotal").textContent=euro(total);
+  return {base:baseConDescuento,iva,total,ivaPct,discount};
+}
+
+async function saveInvoice(){
+  const msg=$("invoiceMsg"),btn=$("invoiceSaveBtn");
+  const client={
+    nombre:$("invClientName")?.value.trim()||"",
+    cif:$("invClientTaxId")?.value.trim()||"",
+    direccion:$("invClientAddress")?.value.trim()||"",
+    cp:$("invClientPostalCode")?.value.trim()||"",
+    ciudad:$("invClientCity")?.value.trim()||"",
+    provincia:$("invClientProvince")?.value.trim()||"",
+    telefono:$("invClientPhone")?.value.trim()||"",
+    email:$("invClientEmail")?.value.trim()||""
+  };
+  const lineas=readInvoiceLines();
+  const calc=recalcInvoice();
+  if(!client.nombre || !client.cif){ msg.className="msg err"; msg.textContent="Indica al menos el nombre/empresa y el CIF/NIF del cliente."; return; }
+  if(!lineas.length || calc.base<=0){ msg.className="msg err"; msg.textContent="Añade al menos un concepto con importe."; return; }
+  if(lineas.some(x=>x.cantidad<=0 || x.precio<0)){ msg.className="msg err"; msg.textContent="Revisa las cantidades y precios de los conceptos."; return; }
+  if(!invoiceConfig.name || !invoiceConfig.taxId){ msg.className="msg err"; msg.textContent="Primero configura tus datos en Ajustes → Datos de facturación."; return; }
+
+  const payload={
+    accion:"crearFactura",
+    tercero:client.nombre,
+    concepto:lineas.map(x=>x.concepto).filter(Boolean).join(" · ").substring(0,500),
+    base:+calc.base.toFixed(2),
+    ivaPorcentaje:calc.ivaPct,
+    iva:+calc.iva.toFixed(2),
+    total:+calc.total.toFixed(2),
+    cliente:JSON.stringify(client),
+    lineas:JSON.stringify(lineas),
+    descuento:+calc.discount.toFixed(2),
+    observaciones:$("invoiceNotes")?.value.trim()||"",
+    emisor:JSON.stringify(invoiceConfig)
+  };
+  btn.disabled=true; msg.className="msg"; msg.textContent="Guardando factura en Google Sheets...";
+  try{
+    const result=await callAction(payload);
+    await syncFromSheets();
+    msg.className="msg ok";
+    msg.textContent=`Factura ${result.numeroFactura||""} guardada correctamente ✓`;
+    setTimeout(()=>showInvoiceToast(result.numeroFactura||"Factura"),250);
+  }catch(e){
+    console.error(e); msg.className="msg err"; msg.textContent=e.message||"No se pudo guardar la factura.";
+  }finally{btn.disabled=false;}
+}
+
+function showInvoiceToast(numero){
+  const old=$("toast"); if(old)old.remove();
+  const d=document.createElement("div"); d.id="toast"; d.className="toast p";
+  d.innerHTML=`<div class="check">✓</div><h3>¡Factura ${esc(numero)} registrada!</h3><p>La factura se ha guardado en Google Sheets.</p><button onclick="document.getElementById('toast').remove()">Aceptar</button>`;
+  document.body.appendChild(d);
 }
 
 function openForm(tipo){
@@ -1559,7 +1865,7 @@ function row(r){
         }
       </div>
       <div class="rbody">
-        <div class="rtitle">${compra?"Compra":"Factura"}</div>
+        <div class="rtitle">${compra?"Compra":(r.numeroFactura?"Factura "+esc(r.numeroFactura):"Factura")}</div>
         <div class="rdesc">${esc(r.tercero)} - ${esc(r.concepto)}</div>
         <div class="rdate">${dateText(r.fecha)}</div>
         ${r.facturaUrl ? `<div class="attachment"><a href="${esc(r.facturaUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📄 Ver ${compra ? "factura / justificante" : "factura emitida"}</a></div>` : ""}
@@ -2144,6 +2450,7 @@ applyAppSettings();
 migrateOldSuppliers();
 renderSupplierPanel();
 loadSuppliersFromGoogle(false);
+loadInvoiceSettings(false);
 
 $("notificationTime").addEventListener("change",e=>{
   saveSetting(SETTINGS_KEYS.notificationTime,e.target.value);
@@ -2375,16 +2682,37 @@ securityStart();
 
 </script>
 
+<div id="invoiceSettingsModal" class="modal hidden" onclick="if(event.target===this)closeInvoiceSettings()">
+  <div class="modalCard">
+    <button class="modalClose" type="button" onclick="closeInvoiceSettings()">×</button>
+    <div class="modalTitle">🧾 Mis datos de facturación</div>
+    <div class="settingsHint" style="margin-bottom:14px">Estos datos se utilizarán como emisor en las nuevas facturas.</div>
+    <div class="settingsInvoiceGrid">
+      <div class="field"><label>Nombre / Empresa</label><input id="issuerName" class="input" placeholder="Ej. Empresa de servicios"></div>
+      <div class="field"><label>CIF / NIF</label><input id="issuerTaxId" class="input" placeholder="Ej. B00000000"></div>
+      <div class="field full"><label>Dirección</label><input id="issuerAddress" class="input" placeholder="Ej. Calle Principal 1"></div>
+      <div class="field"><label>Código postal</label><input id="issuerPostalCode" class="input" inputmode="numeric" placeholder="Ej. 28001"></div>
+      <div class="field"><label>Ciudad</label><input id="issuerCity" class="input" placeholder="Ej. Madrid"></div>
+      <div class="field"><label>Provincia</label><input id="issuerProvince" class="input" placeholder="Ej. Madrid"></div>
+      <div class="field"><label>Teléfono</label><input id="issuerPhone" class="input" inputmode="tel" placeholder="Ej. 900 000 000"></div>
+      <div class="field"><label>Email</label><input id="issuerEmail" class="input" type="email" placeholder="Ej. correo@empresa.com"></div>
+      <div class="field full"><label>Cuenta bancaria / IBAN</label><input id="issuerIban" class="input" placeholder="Ej. ES00 0000 0000 0000 0000 0000"></div>
+    </div>
+    <button class="save p settingsSave" type="button" onclick="saveInvoiceSettings()">GUARDAR DATOS</button>
+    <div id="issuerMsg" class="msg"></div>
+  </div>
+</div>
+
 <div id="guideModal" class="modal hidden guideModal" onclick="if(event.target===this)closeGuide()">
   <div class="modalCard">
     <button class="modalClose" type="button" onclick="closeGuide()">×</button>
     <div class="modalTitle">📖 Guía de Control Fiscal</div>
     <div class="guideStep"><div class="guideNum">1</div><div><h4>Registrar una compra</h4><p>En Compras introduce proveedor, concepto, importe total con IVA y porcentaje de IVA. Puedes adjuntar el PDF o una foto de la factura.</p></div></div>
-    <div class="guideStep"><div class="guideNum">2</div><div><h4>Registrar una factura emitida</h4><p>En Facturación introduce cliente, concepto, base imponible sin IVA y porcentaje de IVA. También puedes adjuntar la factura.</p></div></div>
+    <div class="guideStep"><div class="guideNum">2</div><div><h4>Crear una factura</h4><p>En Facturación introduce los datos del cliente, añade tantos conceptos como necesites y la aplicación calcula la base, el IVA y el total. Tus datos de emisor se configuran en Ajustes.</p></div></div>
     <div class="guideStep"><div class="guideNum">3</div><div><h4>Consultar el resumen</h4><p>Resumen muestra compras, facturación, IVA soportado, IVA repercutido y el resultado del IVA. Verde significa a tu favor, rojo significa a pagar y amarillo significa equilibrado.</p></div></div>
     <div class="guideStep"><div class="guideNum">4</div><div><h4>Revisar documentos pendientes</h4><p>La aplicación cuenta las compras y facturas emitidas que todavía no tienen un archivo adjunto y permite verlas directamente.</p></div></div>
     <div class="guideStep"><div class="guideNum">5</div><div><h4>Enviar documentación al gestor</h4><p>Selecciona compras, facturas emitidas o ambas, elige el período y pulsa Enviar documentación. Los archivos adjuntos se envían por correo.</p></div></div>
-    <div class="guideStep"><div class="guideNum">6</div><div><h4>Ajustes</h4><p>Puedes cambiar el fondo, los colores de Compras y Facturación y guardar la hora que prefieres para el recordatorio diario.</p></div></div>
+    <div class="guideStep"><div class="guideNum">6</div><div><h4>Ajustes</h4><p>Puedes configurar tus datos de facturación, cambiar el fondo, los colores de Compras y Facturación y guardar la hora que prefieres para el recordatorio diario.</p></div></div>
     <div class="guideStep"><div class="guideNum">7</div><div><h4>Seguridad</h4><p>La aplicación se protege mediante código de 4 dígitos y autenticación del dispositivo cuando está disponible.</p></div></div>
     <button class="modalAction" type="button" onclick="closeGuide()">CERRAR</button>
   </div>
