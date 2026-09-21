@@ -1611,7 +1611,7 @@ async function saveInvoice(){
     const result=await callAction(payload);
     await syncFromSheets();
     msg.className="msg ok";
-    msg.textContent=`Factura ${result.numeroFactura||""} guardada correctamente ✓`;
+    msg.textContent=`Factura ${result.numeroFactura||""} guardada en Facturación y PDF subido a Google Drive ✓`;
     setTimeout(()=>showInvoiceToast(result.numeroFactura||"Factura"),250);
   }catch(e){
     console.error(e); msg.className="msg err"; msg.textContent=e.message||"No se pudo guardar la factura.";
@@ -1845,7 +1845,7 @@ function showToast(tipo){
   d.innerHTML=`
     <div class="check">✓</div>
     <h3>¡${p?"Compra":"Factura"} registrada!</h3>
-    <p>El registro se ha enviado a Google Sheets.</p>
+    <p>El registro se ha enviado a Google Sheets y el documento se ha guardado en Google Drive.</p>
     <button onclick="document.getElementById('toast').remove()">Aceptar</button>`;
   document.body.appendChild(d);
 }
